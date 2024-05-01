@@ -1,40 +1,49 @@
 from dotenv import load_dotenv
-from langchain.chains import LLMCheckerChain
-from langchain.chains.summarize import load_summarize_chain
-from langchain_community.document_loaders.pdf import PyPDFLoader
-from langchain_core.prompts import PromptTemplate
-from langchain_openai import OpenAI
+from langchain import hub
+import streamlit as st
+from langchain.agents import AgentExecutor, create_react_agent
+from langchain.callbacks.streamlit import StreamlitCallbackHandler
+from langchain.chains.llm_math.base import LLMMathChain
+from langchain_core.runnables import RunnableConfig
+from langchain_core.tools import Tool
+from langchain_openai import ChatOpenAI
 
 load_dotenv()
 
+st.set_page_config(
+  page_title="Aquarium Assistant", layout="wide", initial_sidebar_state="collapsed"
+)
 
-def checker():
-    llm = OpenAI(temperature=0.7)
+def init_action():
+  llm = ChatOpenAI(model="gpt-4", temperature=0, streaming=True)
+  llm_math_chain_tool = LLMMathChain.from_llm(llm)
+  tools = [
+    Tool(
+      name="Calculator",
+      func=llm_math_chain_tool.run,
+      description="useful for when you need to answer questions about math"
+    )
+  ]
+  prompt = hub.pull("hwchase17/react")
+  react_agent = create_react_agent(llm, tools, prompt)
+  agent_executor = AgentExecutor(agent=react_agent, tools=tools, verbose=True)
 
-    text = "Ist Nitrat giftig für mein Aquarium?"
-
-    checker_chain = LLMCheckerChain.from_llm(llm)
-
-    response = checker_chain.invoke(text)
-
-    print(response)
-
-
-def pdfsummary():
-    pdf_file_path = ("C:\\Users\\timos\\OneDrive\\Studium\\Master\\Masterarbeit\\Masterarbeit\\Quellen\\KMI15_Modulhandbuch_HfTL.pdf")
-    pdf_loader = PyPDFLoader(pdf_file_path)
-    docs = pdf_loader.load_and_split()
-    llm = OpenAI()
-    chain = load_summarize_chain(llm, chain_type="map_reduce", verbose=True)
-    chain.invoke(docs)
-
-def getToken():
-    llm_chain = PromptTemplate.from_template("Tell me the list:") | OpenAI()
-
-    input_list = [
-        {"product": "socks"}
-    ]
-    llm_chain
+  with st.form(key="form"):
+    user_input = st.text_input("Stelle deine Frage:")
+    submit_clicked = st.form_submit_button("Stelle Frage")
 
 
-getToken()
+  output_container = st.empty()
+  if submit_clicked:
+    output_container = output_container.container()
+    output_container.chat_message("user").write(user_input)
+
+    answer_container = output_container.chat_message("assistant")
+    st_callback = StreamlitCallbackHandler(answer_container)
+    cfg = RunnableConfig()
+    cfg["callbacks"] = [st_callback]
+    answer = agent_executor.invoke({"input": user_input}, cfg)
+    answer_container.write(answer["output"])
+
+
+init_action()

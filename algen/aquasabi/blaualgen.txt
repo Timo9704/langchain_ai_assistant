@@ -1,0 +1,28 @@
+Blaualgen sind im biologischen Sinne eigentlich keine Algen, sondern Bakterien. Im Gegensatz zu Algen besitzen die Cyanobakterien (auch Blaubakterien genannt) keinen richtigen Zellkern. Sie sind allerdings genau wie Pflanzen in der Lage, Photosynthese zu betreiben. Es gibt viele verschiedene Blaualgen-Typen, etwa im Wasser schwebende Arten (z.B. in der Gattung _Microcystis_) oder solche, die gallertige Klumpen auf nassem Boden bilden (_Nostoc_). Doch in der Aquaristik kennt man Cyanobakterien vor allem als dunkelgrüne, blaugrüne bis schwarze Beläge, die Wasserpflanzen, Dekoration und Bodengrund im Aquarium überziehen. Sie fühlen sich schmierig an und werden daher auch gerne als "Schmieralgen" betitelt. Sehr markant ist ihr einzigartiger, unangenehmer Geruch, der mit "faulig" oder "erdig" umschrieben werden kann. Oft handelt es sich bei den "Schmieralgen" um Arten der Gattung _Oscillatoria_ (Schwingalgen). Ein geringes Vorkommen etwa an der Kante vom Bodengrund zur Frontscheibe ist als normal anzusehen und kein Grund zur Sorge.
+
+### Häufige Ursachen
+
+Wie auch bei anderen Algen kann ein Nährstoff-Ungleichgewicht die Ursache für einen Ausbruch von Cyanobakterien in einem bepflanzten Aquarium sein. In verschiedenen Fällen war ein sehr hoher Phosphatwert, teilweise in Kombination mit Stickstoffmangel (genauer gesagt Nitratmangel), der Auslöser.  
+Zum einen ist daher ein regelmäßiger Wasserwechsel sehr wichtig, damit es unter anderem nicht zu einer starken Anreicherung bestimmter Stoffe kommt. Wir raten daher zu einem wöchentlichen Wechsel des Wassers von mindestens 50 % des Aquariuminhaltes. Zum anderen ist in einem bepflanzten Becken eine ausgewogene Nährstoffversorgung der Wasserpflanzen sehr von Bedeutung. Gerade in den Bereichen Kohlenstoff (CO2) und Makronährstoffe (NPK) können Mängel oder Ungleichgewichte für Algenaufkommen sorgen. Für die angesprochenen Elemente zeigen wir hier noch einmal die Zielwerte auf:
+
+*   Ein CO2\-Gehalt von etwa 20-30 mg/l, messbar durch einen Dauertest samt Testreagenz
+*   10 bis 25 mg/l Nitrat (NO3)
+*   5 bis 10 mg/l Kalium (K)
+*   0,1 bis 1 mg/l Phosphat (PO4)
+*   \>10 mg/l Magnesium (Mg)
+
+!Blaualgen im Moos
+
+Mit Cyanobakterien befallene Moospolster.
+
+Da es sich bei Blaualgen um Bakterien handelt, ist oft auch ein gestörtes Gleichgewicht in der sogenannten Mikroflora der Grund für ein Algenaufkommen. Damit sind andere Bakterien und Kleinstlebewesen gemeint, die den Biofilm in einem Aquarium bevölkern. Sind diese nicht ausreichend oder in einem Ungleichgewicht zu Cyanobakterien vorhanden, können sich die Blaualgen durch mangelnde Konkurrenz spürbar vermehren. Dies kann vor allem in der Einfahrphase eines Aquariums passieren, da hier das gesamte ökologische Gleichgewicht noch nicht richtig entwickelt ist. In dem Falle solltest Du dafür sorgen, in Deinem Aquarium "nützliche" Bakterien anzusiedeln. Dies kann etwa durch die Zugabe von bakteriellen Präparaten wie Special Blend und Nite-Out II geschehen. Oft hilft es auch, das Aquarium mit etwas Mulm oder Filterschlamm aus einem anderen, bereits stabil laufenden Becken anzuimpfen.
+
+### Bekämpfungsmaßnahmen
+
+Vereinzelte Blaualgen-Nester lassen sich gut mit einem Schlauch absaugen, da die Beläge recht locker sitzen und nicht festwachsen. Tauchen an diesen einzelnen Stellen die Blaualgen immer wieder auf, lassen sich diese gut mit der sogenannten Einnebelmethode mit Wasserstoffperoxid behandeln.
+
+Bei einem stärkeren Befall mit Blaualgen raten wir Dir zunächst zu einer Dunkelkur.
+
+Eine andere Maßnahme für Pflanzenaquarien ist die sogenannte Kalium-Methode. Hierbei wird durch einen reinen Kaliumdünger die Konzentration des Nährstoffes Kalium (K+) auf etwa 30 mg/l erhöht und für eine Woche auf diesem Niveau gehalten. Um die Nährstoffsituation anzupassen, sollte der Nitrat-Gehalt bei etwa 20 mg/l eingestellt werden. Nach Ablauf der Zeit wird ein maximaler Wasserwechsel durchgeführt und die Düngung wieder auf ein normales Maß reduziert. Sehr wahrscheinlich sorgt diese gezielte Nährstoffspitze und der daraus resultierende Pflanzenwuchs dafür, dass die Cyanobakterien verdrängt werden.
+
+Als Notfallmaßnahmen seien bestimmte Anti-Algenmittel erwähnt, die sich gezielt gegen Blaualgen richten. Da wäre zum einen das Präparat Blue Exit von Easy Life. Wir empfehlen Dir jedoch eher eine Komplettbehandlung des Aquariums mit Wasserstoffperoxid. Dazu findest Du hier eine genaue Anleitung.
