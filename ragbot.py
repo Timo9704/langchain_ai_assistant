@@ -15,6 +15,7 @@ retriever = vectorstore.as_retriever()
 template = """Use the following pieces of context to answer the question at the end.
 If you don't know the answer, just say that you don't know, don't try to make up an answer.
 Use three sentences maximum and keep the answer as concise as possible.
+Think step by step.
 
 {context}
 
@@ -24,7 +25,7 @@ Helpful Answer:"""
 custom_rag_prompt = PromptTemplate.from_template(template)
 
 # LLM
-llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
+llm = ChatOpenAI(model_name="gpt-4o", temperature=0.7)
 
 # Post-processing
 def format_docs(docs):
@@ -37,5 +38,5 @@ rag_chain = (
     | llm
     | StrOutputParser()
 )
-for chunk in rag_chain.stream("Wann tritt eine Bakterienblüte auf?"):
+for chunk in rag_chain.stream("Was ist Aquasabi?"):
     print(chunk, end="", flush=True)
