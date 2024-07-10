@@ -5,24 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7d024c9d-6268-4a07-8354-c1f4873099c5" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/webscraper/scraper_aquaristikprofi.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/webscraper/scraper_aquasabi.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/webscraper/sources/algen.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/webscraper/sources/aquascaping.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/webscraper/sources/nährstoffe.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/webscraper/sources/technik.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/webscraper/sraper_garnelenguemmer.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/webscraper/sraper_garnelenhaus.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/webscraper/webscraper_general.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ai_assistant/ai_assistent.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/algen/aquasabi/bakterienblüte.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/algen/aquasabi/blaualgen.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/algen/aquasabi/kieselalgen.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/algen/aquasabi/pinselalgen.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/algen/aquasabi/scheibenpest.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ragbot.py" beforeDir="false" afterPath="$PROJECT_DIR$/ragbot.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vector_uploader.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_embedding/vector_uploader.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ragbot.py" beforeDir="false" afterPath="$PROJECT_DIR$/ai_assistant/ragbot.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -53,6 +38,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "Python.ai_assistent.executor": "Run",
     "Python.main.executor": "Run",
     "Python.ragbot.executor": "Run",
     "Python.scraper.executor": "Run",
@@ -68,7 +54,7 @@
     "git-widget-placeholder": "main",
     "ignore.virus.scanning.warn.message": "true",
     "last_opened_file_path": "E:/Web/Applikationen/langchain_ai_assistant/webscraper",
-    "settings.editor.selected.configurable": "preferences.lookFeel"
+    "settings.editor.selected.configurable": "preferences.pluginManager"
   }
 }]]></component>
   <component name="RecentsManager">
@@ -77,6 +63,7 @@
       <recent name="E:\Web\Applikationen\langchain_ai_assistant\webscraper\sources" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="E:\Web\Applikationen\langchain_ai_assistant\ai_assistant" />
       <recent name="E:\Web\Applikationen\langchain_ai_assistant\webscraper\sources" />
       <recent name="E:\Web\Applikationen\langchain_ai_assistant\vector_embedding" />
       <recent name="E:\Web\Applikationen\langchain_ai_assistant\webscraper" />
@@ -124,5 +111,16 @@
       <updated>1711450553138</updated>
     </task>
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
 </project>
