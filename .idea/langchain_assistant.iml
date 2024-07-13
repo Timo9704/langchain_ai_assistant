@@ -8,4 +8,8 @@
     <orderEntry type="jdk" jdkName="Python 3.12 (langchain_ai_assistant)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
+  <component name="PackageRequirementsSettings">
+    <option name="versionSpecifier" value="Greater or equal (&gt;=x.y.z)" />
+    <option name="removeUnused" value="true" />
+  </component>
 </module>

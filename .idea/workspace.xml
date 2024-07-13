@@ -5,9 +5,23 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7d024c9d-6268-4a07-8354-c1f4873099c5" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/ai_planer/ai_planer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/langchain_assistant.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/langchain_assistant.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ai_assistant/ai_assistent.py" beforeDir="false" afterPath="$PROJECT_DIR$/ai_assistent.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ai_assistant/ragbot.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ai_planer/ai_planer.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vector_embedding/vector_uploader.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/webscraper/scraper_aquaristikprofi.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/webscraper/scraper_aquasabi.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/webscraper/sources/algen.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/webscraper/sources/aquascaping.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/webscraper/sources/nährstoffe.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/webscraper/sources/technik.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/webscraper/sraper_garnelenguemmer.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/webscraper/sraper_garnelenhaus.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/webscraper/webscraper_general.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -53,12 +67,13 @@
     &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/workspace/wbh/langchain_ai_assistant&quot;,
+    &quot;last_opened_file_path&quot;: &quot;E:/Web/Applikationen/langchain_ai_assistant/ai_assistant&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;http.proxy&quot;
   }
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="E:\Web\Applikationen\langchain_ai_assistant\ai_assistant" />
       <recent name="E:\Web\Applikationen\langchain_ai_assistant\webscraper" />
       <recent name="E:\Web\Applikationen\langchain_ai_assistant\webscraper\sources" />
     </key>
@@ -96,7 +111,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-975db3bf15a3-31b6be0877a2-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-241.18034.82" />
+        <option value="bundled-python-sdk-09665e90c3a7-d3b881c8e49f-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-233.15026.15" />
       </set>
     </attachedChunks>
   </component>
