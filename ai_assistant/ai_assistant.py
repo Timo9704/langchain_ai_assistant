@@ -1,3 +1,4 @@
+import logging
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -10,6 +11,11 @@ from langchain_community.vectorstores import Pinecone
 
 # Laden der Umgebungsvariablen
 load_dotenv()
+
+# Konfigurieren des Loggings
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger('uvicorn.error')
+logger.setLevel(logging.INFO)
 
 # Erstellen des FastAPI-App-Objekts
 app = FastAPI()
@@ -31,6 +37,7 @@ class ChatRequest(BaseModel):
 # API Route zum Empfangen des Prompts und Senden der Antwort
 @app.post("/chat/")
 async def chat(request: ChatRequest):
+    logger.info(f"Received question: {request.question}")
     try:
         rag_chain = (
             {"context": retriever | format_docs, "question": RunnablePassthrough()}
@@ -39,6 +46,8 @@ async def chat(request: ChatRequest):
             | StrOutputParser()
         )
         answer = rag_chain.invoke(request.question)
+        logger.info(f"Answer: {answer}")
         return {"answer": answer}
     except Exception as e:
+        logger.error(f"Error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

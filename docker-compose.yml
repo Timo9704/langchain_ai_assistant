@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  ai_assistent:
+    build:
+      context: .
+      dockerfile: ai_assistant/Dockerfile
+    ports:
+      - "8000:8000"

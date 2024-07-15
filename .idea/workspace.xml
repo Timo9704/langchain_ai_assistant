@@ -5,23 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7d024c9d-6268-4a07-8354-c1f4873099c5" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ai_planner/Dockerfile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ai_planner/ai_planner.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/langchain_assistant.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/langchain_assistant.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ai_assistant/ai_assistent.py" beforeDir="false" afterPath="$PROJECT_DIR$/ai_assistent.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ai_assistant/ragbot.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ai_planer/ai_planer.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/ai_assistant/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ai_assistent.py" beforeDir="false" afterPath="$PROJECT_DIR$/ai_assistant/ai_assistant.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vector_embedding/vector_uploader.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/webscraper/scraper_aquaristikprofi.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/webscraper/scraper_aquasabi.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/webscraper/sources/algen.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/webscraper/sources/aquascaping.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/webscraper/sources/nährstoffe.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/webscraper/sources/technik.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/webscraper/sraper_garnelenguemmer.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/webscraper/sraper_garnelenhaus.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/webscraper/webscraper_general.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -50,35 +40,42 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Python.ai_assistent.executor&quot;: &quot;Run&quot;,
-    &quot;Python.main.executor&quot;: &quot;Run&quot;,
-    &quot;Python.ragbot.executor&quot;: &quot;Run&quot;,
-    &quot;Python.scraper.executor&quot;: &quot;Run&quot;,
-    &quot;Python.scraper_aquasabi.executor&quot;: &quot;Run&quot;,
-    &quot;Python.sraper_garnelenguemmer.executor&quot;: &quot;Run&quot;,
-    &quot;Python.sraper_playground.executor&quot;: &quot;Run&quot;,
-    &quot;Python.vector_uploader.executor&quot;: &quot;Run&quot;,
-    &quot;Python.webscraper.executor&quot;: &quot;Run&quot;,
-    &quot;Python.webscraper_general.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;E:/Web/Applikationen/langchain_ai_assistant/ai_assistant&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;http.proxy&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python.ai_assistent.executor": "Run",
+    "Python.main.executor": "Run",
+    "Python.ragbot.executor": "Run",
+    "Python.scraper.executor": "Run",
+    "Python.scraper_aquasabi.executor": "Run",
+    "Python.sraper_garnelenguemmer.executor": "Run",
+    "Python.sraper_playground.executor": "Run",
+    "Python.vector_uploader.executor": "Run",
+    "Python.webscraper.executor": "Run",
+    "Python.webscraper_general.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "git-widget-placeholder": "main",
+    "ignore.virus.scanning.warn.message": "true",
+    "last_opened_file_path": "E:/Web/Applikationen/langchain_ai_assistant/ai_planner",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
+  },
+  "keyToStringList": {
+    "com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File": [
+      "PLAIN_TEXT"
+    ]
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="E:\Web\Applikationen\langchain_ai_assistant\ai_planner" />
       <recent name="E:\Web\Applikationen\langchain_ai_assistant\ai_assistant" />
       <recent name="E:\Web\Applikationen\langchain_ai_assistant\webscraper" />
       <recent name="E:\Web\Applikationen\langchain_ai_assistant\webscraper\sources" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="E:\Web\Applikationen\langchain_ai_assistant\ai_assistant" />
+      <recent name="E:\Web\Applikationen\langchain_ai_assistant" />
       <recent name="E:\Web\Applikationen\langchain_ai_assistant\webscraper\sources" />
       <recent name="E:\Web\Applikationen\langchain_ai_assistant\vector_embedding" />
       <recent name="E:\Web\Applikationen\langchain_ai_assistant\webscraper" />
