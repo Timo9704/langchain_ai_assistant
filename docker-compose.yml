@@ -7,3 +7,9 @@ services:
       dockerfile: ai_assistant/Dockerfile
     ports:
       - "8000:8000"
+  ai_planner:
+    build:
+      context: .
+      dockerfile: ai_planner/Dockerfile
+    ports:
+      - "8001:8001"
