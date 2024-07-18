@@ -1,4 +1,3 @@
-import uuid
 import logging
 from fastapi import FastAPI, HTTPException
 from langchain.chains.combine_documents import create_stuff_documents_chain
@@ -6,13 +5,14 @@ from langchain.chains.history_aware_retriever import create_history_aware_retrie
 from langchain.chains.retrieval import create_retrieval_chain
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 from langchain_core.runnables import RunnableWithMessageHistory
 from langchain_openai import OpenAIEmbeddings
 from langchain_openai.chat_models import ChatOpenAI
 from langchain_community.vectorstores import Pinecone
 from langchain_community.chat_message_histories import ChatMessageHistory
+
+from model.input_model import RequestBody
 
 load_dotenv()
 
@@ -43,17 +43,8 @@ def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 
 
-def generate_session_id():
-    return f"{uuid.uuid4()}"
-
-
-class RequestData(BaseModel):
-    human_input: str
-    session_id: str = Field(default_factory=generate_session_id)
-
-
 @app.post("/assistant/")
-async def chat(request: RequestData):
+async def chat(request: RequestBody):
     try:
         system_prompt = (
             "You are an assistant for question-answering tasks. "
@@ -106,12 +97,12 @@ async def chat(request: RequestData):
         )
 
         answer = conversational_rag_chain.invoke(
-            {"input": request.human_input},
+            {"input": request.ai_input.human_input},
             config={
-                "configurable": {"session_id": request.session_id}
+                "configurable": {"session_id": request.ai_input.session_id}
             },
         )["answer"]
-        return {"answer": answer, "session_id": request.session_id}
+        return {"answer": answer, "session_id": request.ai_input.session_id}
     except Exception as e:
         logger.error(f"Error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

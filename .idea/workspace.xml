@@ -5,9 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7d024c9d-6268-4a07-8354-c1f4873099c5" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/ai_planner/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/ai_planner/Dockerfile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ai_assistant/model/input_model.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ai_planner/model/example.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ai_planner/model/model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ai_assistant/ai_assistant.py" beforeDir="false" afterPath="$PROJECT_DIR$/ai_assistant/ai_assistant.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ai_planner/ai_planner.py" beforeDir="false" afterPath="$PROJECT_DIR$/ai_planner/ai_planner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -70,11 +73,11 @@
       <recent name="E:\Web\Applikationen\langchain_ai_assistant\webscraper\sources" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="E:\Web\Applikationen\langchain_ai_assistant\ai_planner\model" />
       <recent name="E:\Web\Applikationen\langchain_ai_assistant\ai_assistant" />
       <recent name="E:\Web\Applikationen\langchain_ai_assistant" />
       <recent name="E:\Web\Applikationen\langchain_ai_assistant\webscraper\sources" />
       <recent name="E:\Web\Applikationen\langchain_ai_assistant\vector_embedding" />
-      <recent name="E:\Web\Applikationen\langchain_ai_assistant\webscraper" />
     </key>
   </component>
   <component name="RunManager">
