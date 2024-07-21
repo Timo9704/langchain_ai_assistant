@@ -6,11 +6,12 @@ from langchain_community.vectorstores import Pinecone
 from langchain_google_community import GoogleSearchAPIWrapper
 from dotenv import load_dotenv
 from langchain import hub
-from langchain.agents import AgentExecutor, create_react_agent, AgentOutputParser
+from langchain.agents import AgentExecutor, create_react_agent
 from langchain.chains.llm_math.base import LLMMathChain
 from langchain_core.tools import Tool
 from langchain_core.prompts import PromptTemplate
-from pydantic.v1 import BaseModel
+
+from ai_planner.model.input_model import RequestBody
 
 load_dotenv()
 
@@ -22,7 +23,7 @@ logger.setLevel(logging.INFO)
 # FastAPI config
 app = FastAPI()
 
-llm = ChatOpenAI(model="gpt-4o", temperature=0.7, streaming=True)
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, streaming=True)
 response_schemas = [
     ResponseSchema(name="aquarium_name", description="Name des Aquariums oder des Aquarium-Sets"),
     ResponseSchema(name="aquarium_preis", description="Preis des Aquariums oder des Aquarium-Sets"),
@@ -46,7 +47,8 @@ def tool_retriever_vectorstore():
     retriever_tool = Tool(
         name="Knowledge retriever",
         func=retrieve_knowledge,
-        description="A knowledge base for aquaristic-topics. Useful for if you need to answer questions about aquarium, fish, aquatic plants or anything related to aquatics."
+        description="Ein Knowledge-Retriever, der Informationen zu Aquarien, Technik, Fischen und Pflanzen liefert. "
+                    "Nutze diesen, wenn du keine ggeigneten Informationen in Search findest."
     )
     return retriever_tool
 
@@ -58,41 +60,53 @@ def tool_math_calculator():
     calculator_tool = Tool(
         name="Calculator",
         func=llm_math_chain_tool.run,
-        description="A math calculator. Useful for when you need to answer questions about math."
+        description="Ein Taschenrechner, wenn du mathematische Berechnungen durchführen möchtest."
     )
     return calculator_tool
 
 
-def tool_google_search():
-    search = GoogleSearchAPIWrapper()
+def tool_google_search_aquarium():
+    search = GoogleSearchAPIWrapper(google_cse_id="")
 
     google_search_tool = Tool(
         name="google_search",
-        description="A web search. Useful for when you need to search for specific information"
-                    " like Aquariums, Technics, fishes or plants.",
-        func=search.run,
+        description="Eine Websuche. Nützlich, wenn du nach Aquarien suchen möchtest. Hier kannst du Größen, "
+                    "Literangaben oder Preise finden.",
+        func=search.run
+    )
+    return google_search_tool
+
+
+def tool_google_search_fish():
+    search = GoogleSearchAPIWrapper(google_cse_id="")
+
+    google_search_tool = Tool(
+        name="google_search",
+        description="Eine Websuche. Nützlich, wenn du nach Fischen suchen möchtest.",
+        func=search.run
     )
     return google_search_tool
 
 
 @app.post("/planner/")
-async def chat():
+async def chat(request: RequestBody):
         try:
             tools = [
                 tool_math_calculator(),
                 tool_retriever_vectorstore(),
-                tool_google_search()
+                tool_google_search_aquarium()
             ]
 
             promptTemplate = PromptTemplate.from_template(
-                template="""
+                template=f"""
             Du bist ein Aquarium-Experte und berätst einen Anfänger bei der Wahl seines ersten Aquariums, der Technik, des Besatzes und der Bepflanzung.
             Gehe Schritt für Schritt vor.
-            1. Suche ein Aquarium und den exakten Preis. Der Anfänger wünscht sich ein Set-Aquarium. Das Set darf maximal 500 Euro kosten. 
-            2. Plane weitere Technik passend zu dem von dir ausgesuchten Aquarium. Wenn es ein Set-Aquarium mit Filter, Beleuchtung und Heizer ist, dannbeachte, dass die von dir ausgesuchte Technik sich nicht überschneidet.
-            3. Suche Besatz, welcher zur Größe des Aquariums passt. Der Besatz muss auch untereinander vergesellschaftet werden. Denke daran, dass die Person ein Anfänger ist.
-            4. Suche eine passende Bepflanzung aus. Die Bepflanzung richtet sich auch nach den Bedürfnissen der von dir ausgesuchten Tiere und der zur Verfügung stehenden Technik, wie z.B. CO2-Versorgung.
-            Die finale Antwort muss ein strukturiertes JSON sein.
+            1. Suche ein passendes Aquarium. Der Anfänger hat maximal {request.availableSpace} Platz für das Aquarium und soll maximal {request.maxVolume} Liter besitzen. Der Anfänger hat ein Budget von maximal {request.maxCost} Euro und {'benötigt' if request.needCabinet else 'benötigt keinen'} zusätzlichen Unterschrank.
+            2. Plane weitere Technik passend zu dem von dir ausgesuchten Aquarium. Überprüfe, ob es ein Set-Aquarium mit Filter, Beleuchtung und Heizer ist, falls ja, dann wird keine weitere Technik benötigt. Falls nein, dann suche nach Technik, welche zu deinem ausgesuchten Aquarium passt.
+            3. Suche nun passenden Besatz. Der Anfänger hat {'einige' if request.favoritAnimals else 'keine'} Tiere, welche er unbedingt halten möchte, sofern diese zum Aquarium und zu den Wasserwerten passen. {f'Die folgenden Tiere sollten sind Aquarium: {request.favoriteFishList}.' if request.favoritAnimals else ''} 
+            Bedenke, dass der Besatz muss auch untereinander vergesellschaftet werden können muss. Denke daran, dass die Person ein Anfänger ist. Die Werte des Leitungswassers sind: {request.waterValues}.
+            4. Suche eine passende Bepflanzung aus. Die Bepflanzung richtet sich auch nach den Bedürfnissen der von dir ausgesuchten Tiere und der zur Verfügung stehenden Technik, wie z.B. CO2-Versorgung. Der Anfänger möchte {'unbedingt' if request.useForegroundPlants else 'keine'} Vordergrundpflanzen haben. Das Aquarium soll {request.plantingIntensity} bepflanzt werden.
+            Bedenke bei der Auswahl der Pflanzen auch das Wachstum und die Pflege. Der Pflegeaufwand soll maximal {request.maintenanceEffort} sein.
             Bitte antworte in Deutsch!""",
                 partial_variables={"format_instructions": format_instructions},
             )

@@ -7,14 +7,14 @@ def generate_session_id():
 
 
 class WaterParameters(BaseModel):
-    ph: float
-    gh: int
-    kh: int
-    no2: float
-    no3: int
-    po4: float
-    fe: float
-    k: int
+    ph: str
+    gh: str
+    kh: str
+    no2: str
+    no3: str
+    po4: str
+    fe: str
+    k: str
 
 
 class AquariumData(BaseModel):

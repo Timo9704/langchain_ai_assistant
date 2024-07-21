@@ -25,9 +25,9 @@ logger.setLevel(logging.INFO)
 app = FastAPI()
 
 # LangChain config
-llm = ChatOpenAI(model="gpt-3.5-turbo-0125")
+llm = ChatOpenAI(model="gpt-4o-mini")
 vectorstore = Pinecone.from_existing_index("aquabot", embedding=OpenAIEmbeddings())
-retriever = vectorstore.as_retriever()
+retriever = vectorstore.as_retriever(search_kwargs={"k": 10})
 
 store = {}
 
@@ -46,22 +46,26 @@ def format_docs(docs):
 @app.post("/assistant/")
 async def chat(request: RequestBody):
     try:
+
         system_prompt = (
-            "You are an assistant for question-answering tasks. "
-            "Use the following pieces of retrieved context to answer "
-            "the question. If you don't know the answer, say that you "
-            "don't know. Use three sentences maximum and keep the "
-            "answer concise."
+            "Du bist ein Aquaristik-Experte für Fragen und Antworten."
+            "Nutze für deine Antworten die folgenden Informationen aus deinem Fachgebiet."
+            "Wenn du keine Antwort weißt, schreibe einfach 'weiß nicht'."
+            f"Beachte, dass der Fragesteller sich auf dem Niveau {request.preferences.experience_level} befindet."
+            f"Bitte antworte von der Länge und detailtiefe {request.preferences.detail_level}."
+            "Weiterhin bekommst du die folgende Informationen über das Aquarium, falls du Fragen zu bestimmten "
+            "Problemen mit Bezug auf das Aquarium des Fragestellers beantworten sollst:"
+            f"Das Aquarium hat ein Volumen von {request.aquarium_data.aquarium_liter} Litern."
+            f"Die Wasserparameter der letzten Messung sind: {request.aquarium_data.water_parameters.json}"
             "\n\n"
             "{context}"
         )
 
         contextualize_q_system_prompt = (
-            "Given a chat history and the latest user question "
-            "which might reference context in the chat history, "
-            "formulate a standalone question which can be understood "
-            "without the chat history. Do NOT answer the question, "
-            "just reformulate it if needed and otherwise return it as is."
+            "Gegeben sei ein Chatverlauf und die neueste Benutzerfrage, "
+            "die sich möglicherweise auf den Kontext im Chatverlauf bezieht. "
+            "Formuliere eine eigenständige Frage, die ohne den Chatverlauf verstanden werden kann. "
+            "Beantworte die Frage NICHT, sondern formuliere sie bei Bedarf um oder gebe sie unverändert zurück."
         )
 
         contextualize_q_prompt = ChatPromptTemplate.from_messages(
