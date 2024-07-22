@@ -1,4 +1,6 @@
 import logging
+import os
+
 from fastapi import FastAPI, HTTPException
 from langchain.output_parsers import StructuredOutputParser, ResponseSchema
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
@@ -11,7 +13,7 @@ from langchain.chains.llm_math.base import LLMMathChain
 from langchain_core.tools import Tool
 from langchain_core.prompts import PromptTemplate
 
-from ai_planner.model.input_model import RequestBody
+from model.input_model import RequestBody
 
 load_dotenv()
 
@@ -54,7 +56,6 @@ def tool_retriever_vectorstore():
 
 
 def tool_math_calculator():
-
     llm_math_chain_tool = LLMMathChain.from_llm(llm)
 
     calculator_tool = Tool(
@@ -66,10 +67,10 @@ def tool_math_calculator():
 
 
 def tool_google_search_aquarium():
-    search = GoogleSearchAPIWrapper(google_cse_id="")
+    search = GoogleSearchAPIWrapper(google_cse_id=os.environ.get("GOOGLE_CSE_ID_ALL"))
 
     google_search_tool = Tool(
-        name="google_search",
+        name="Google Search Aquarium",
         description="Eine Websuche. Nützlich, wenn du nach Aquarien suchen möchtest. Hier kannst du Größen, "
                     "Literangaben oder Preise finden.",
         func=search.run
@@ -78,11 +79,11 @@ def tool_google_search_aquarium():
 
 
 def tool_google_search_fish():
-    search = GoogleSearchAPIWrapper(google_cse_id="")
+    search = GoogleSearchAPIWrapper(google_cse_id=os.environ.get("GOOGLE_CSE_ID_FISH"))
 
     google_search_tool = Tool(
-        name="google_search",
-        description="Eine Websuche. Nützlich, wenn du nach Fischen suchen möchtest.",
+        name="Google Search Fish",
+        description="Eine Websuche. Nützlich, wenn du nach Fischen, Garnelen oder Schnecken suchen möchtest.",
         func=search.run
     )
     return google_search_tool
@@ -101,7 +102,7 @@ async def chat(request: RequestBody):
                 template=f"""
             Du bist ein Aquarium-Experte und berätst einen Anfänger bei der Wahl seines ersten Aquariums, der Technik, des Besatzes und der Bepflanzung.
             Gehe Schritt für Schritt vor.
-            1. Suche ein passendes Aquarium. Der Anfänger hat maximal {request.availableSpace} Platz für das Aquarium und soll maximal {request.maxVolume} Liter besitzen. Der Anfänger hat ein Budget von maximal {request.maxCost} Euro und {'benötigt' if request.needCabinet else 'benötigt keinen'} zusätzlichen Unterschrank.
+            1. Suche ein passendes Aquarium im Tool "Knowledge retriever". Weniger als {request.availableSpace}cm Kantenlänge und weniger als {request.maxVolume} Liter, aber mehr als 54 Liter. Der Anfänger hat ein Budget von maximal {request.maxCost} Euro und {'benötigt' if request.needCabinet else 'benötigt keinen'} zusätzlichen Unterschrank.
             2. Plane weitere Technik passend zu dem von dir ausgesuchten Aquarium. Überprüfe, ob es ein Set-Aquarium mit Filter, Beleuchtung und Heizer ist, falls ja, dann wird keine weitere Technik benötigt. Falls nein, dann suche nach Technik, welche zu deinem ausgesuchten Aquarium passt.
             3. Suche nun passenden Besatz. Der Anfänger hat {'einige' if request.favoritAnimals else 'keine'} Tiere, welche er unbedingt halten möchte, sofern diese zum Aquarium und zu den Wasserwerten passen. {f'Die folgenden Tiere sollten sind Aquarium: {request.favoriteFishList}.' if request.favoritAnimals else ''} 
             Bedenke, dass der Besatz muss auch untereinander vergesellschaftet werden können muss. Denke daran, dass die Person ein Anfänger ist. Die Werte des Leitungswassers sind: {request.waterValues}.
