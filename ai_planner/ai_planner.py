@@ -2,6 +2,7 @@ import logging
 import os
 
 from fastapi import FastAPI, HTTPException
+from langchain_core.output_parsers import JsonOutputParser
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_community.vectorstores import Pinecone
 from langchain_google_community import GoogleSearchAPIWrapper
@@ -16,6 +17,7 @@ from langchain_experimental.sql import SQLDatabaseChain
 from langchain_community.utilities import SQLDatabase
 from sqlalchemy import create_engine
 
+from model.output_model import AquariumPlanningResult
 from model.input_model import RequestBody
 
 load_dotenv()
@@ -36,6 +38,7 @@ db = SQLDatabase(create_engine(db_url))
 
 db_chain_tool = SQLDatabaseChain.from_llm(llm_db, db, verbose=True, return_direct=True)
 
+parser = JsonOutputParser(pydantic_object=AquariumPlanningResult)
 
 def tool_retriever_vectorstore():
     embedding = OpenAIEmbeddings()
@@ -69,7 +72,7 @@ def tool_google_search_aquarium():
     search = GoogleSearchAPIWrapper(google_cse_id=os.environ.get("GOOGLE_CSE_ID_ALL"))
 
     google_search_tool = Tool(
-        name="Google Search Aquarium",
+        name="Google Search",
         description="Eine Websuche. Nützlich, wenn du nach Zubehör, Technik oder anderen Produkten suchen musst.",
         func=search.run
     )
@@ -100,7 +103,9 @@ async def chat(request: RequestBody):
                - Bedingungen:
                  - Kantenlänge: Weniger als oder gleich {request.availableSpace} cm
                  - Volumen: Weniger als oder gleich {request.maxVolume} Liter, aber nicht weniger als 54 Liter
+                 - Preis: Weniger als oder gleich {request.maxCost}
                - Wenn du mehr als ein passendes Aquarium findest, wähle das größere aus.
+               {f'- Suche dann bei Google, ob ein Unterschrank für dieses Aquarium existiert: {request.favoriteFishList}.' if request.needCabinet else ''}
                - **Stopping Condition:** Wenn ein passendes Aquarium gefunden wurde, gehe zu Schritt 2.
 
             2. Recherchiere dann die notwendige Technik für das gewählte Aquarium:
@@ -125,18 +130,8 @@ async def chat(request: RequestBody):
                - Bedenke bei der Auswahl der Pflanzen auch das Wachstum und die Pflege.
                - Der Pflegeaufwand soll maximal {request.maintenanceEffort} sein.
                - **Stopping Condition:** Wenn die optimale Bepflanzung gefunden wurde, fasse alle Ergebnisse zusammen und stelle sie in einer Markdown-Tabelle dar.
-
-            Fasse alle Ergebnisse in einer Markdown-Tabelle zusammen:
-
-            | Abschnitt    | Beschreibung                                      |
-            |--------------|---------------------------------------------------|
-            | Aquarium     | Name: aquarium.name, Volumen: aquarium.volume L, Kantenlänge: aquarium.length cm |
-            | Technik      | Filter: technik.filter, Beleuchtung: technik.light, Heizer: technik.heater, Kosten: technik.costs € |
-            | Besatz       | Tiere: besatz.fishList                         |
-            | Bepflanzung  | Pflanzen: bepflanzung.plantList              |
-            
-            Gebe diese Tabelle als Antwort aus.
-            """
+            """,
+            partial_variables={"format_instructions": parser.get_format_instructions()},
         )
 
         prompt = hub.pull("hwchase17/react")

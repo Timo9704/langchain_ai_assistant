@@ -1,5 +1,10 @@
 FROM python:3.12-slim
 
+ENV http_proxy="http://specialinternetaccess-lb.telekom.de:8080"
+ENV https_proxy="http://specialinternetaccess-lb.telekom.de:8080"
+ENV HTTP_PROXY="http://specialinternetaccess-lb.telekom.de:8080"
+ENV HTTPS_PROXY="http://specialinternetaccess-lb.telekom.de:8080"
+
 WORKDIR /app
 
 # Copy requirements.txt from the parent directory

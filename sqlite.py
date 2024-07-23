@@ -32,11 +32,30 @@ c.execute('''CREATE TABLE fish (
 
 # Daten, die eingefügt werden sollen
 data = [
-    ("Juwel Rio 125", 120, 80, 200),
-    ("Juwel Rio 250", 120, 250, 550),
+    ("Juwel Rio 125", 80, 125, 200),
+    ("Juwel Rio 180", 100, 180, 550),
+    ("Juwel Rio 240", 120, 240, 550),
+    ("Juwel Rio 350", 120, 350, 800),
     ("Juwel Rio 450", 250, 450, 800),
     ("Eheim clearscape 73", 60, 73, 200),
-    ("Eheim clearscape 175", 73, 175, 300)
+    ("Eheim clearscape 175", 71, 175, 300),
+    ("Eheim clearscape 200", 90, 200, 200),
+    ("Eheim clearscape 300", 120, 300, 200),
+    ("Eheim proxima 175", 70, 175, 200),
+    ("Eheim proxima 250", 100, 250, 200),
+    ("Eheim proxima 325", 130, 325, 200),
+    ("Eheim proxima scape", 71, 175, 200),
+    ("Eheim vivalineLED 126", 80, 126, 200),
+    ("Eheim vivalineLED 150", 60, 150, 200),
+    ("Eheim vivalineLED 180", 100, 180, 200),
+    ("Clear Garden Mini M", 100, 180, 200),
+    ("Clear Garden 45P", 36, 20, 70),
+    ("Clear Garden 60P", 60, 64, 130),
+    ("Clear Garden 90P", 90, 182, 479),
+    ("Clear Garden 120P", 120, 240, 550),
+    ("Dennerle Scapers Tank 35", 40, 35, 70),
+    ("Dennerle Scapers Tank 55", 45, 55, 90),
+    ("Dennerle Scapers Tank 70", 50, 70, 120)
 ]
 
 # Daten in die Tabelle einfügen
@@ -48,6 +67,7 @@ data = [
     ('Schwertträger Marygold', 'Xiphophorus helleri', 'Südamerika', 22, 28, 7.0, 8.5, 10, 30, 5, 20, 54, 9999),
     ('Molly schwarz', 'Poecilia sphenops', 'Südamerika', 24, 28, 7.0, 8.5, 12, 30, 5, 20, 80, 9999),
     ('Platy', 'Xiphophorus maculatus', 'Südamerika', 18, 28, 7.0, 8.5, 5, 25, 5, 20, 54, 9999),
+    ('Leuchtaugenbärbling', 'Rasbora dorsiocellata macrophthalma', 'Asien', 20, 28, 5.5, 7.5, 5, 10, 1, 6, 60, 9999),
     ('Diskus', 'Symphysodon discus', 'Südamerika', 29, 30, 5.0, 7.0, 1, 10, 1, 2, 300, 9999)
 ]
 

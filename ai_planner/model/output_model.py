@@ -3,10 +3,12 @@ from typing import List
 
 
 class Aquarium(BaseModel):
-    product_name: str = Field(..., description="Name des Aquarium-Produkts")
-    price: str = Field(..., description="Preis des Aquariums")
+    aquarium_name: str = Field(..., description="Name des Aquarium-Produkts")
+    aquarium_price: str = Field(..., description="Preis des Aquariums")
     link: str = Field(..., description="Link zum Online-Shop für das Aquarium")
     included_items: List[str] = Field(..., description="Liste der im Set enthaltenen Artikel")
+    cabinet: str = Field(..., description="Aquarium besitzt einen oder keinen Unterschrank")
+    cabinet_price: str = Field(..., description="Preis des Unterschranks")
 
 
 class Tech(BaseModel):
@@ -16,8 +18,8 @@ class Tech(BaseModel):
 
 
 class Fish(BaseModel):
-    fish_name: str = Field(..., description="Name des Fisches")
-    quantity: int = Field(..., description="Anzahl der Fische")
+    fish_common_name: str = Field(..., description="Umgangsprachlicher Name des Fisches")
+    quantity: int = Field(..., description="Anzahl der Fischart")
     link: str = Field(..., description="Link zum Online-Shop für den Fisch")
 
 
@@ -27,7 +29,7 @@ class Plant(BaseModel):
     link: str = Field(..., description="Link zum Online-Shop für die Pflanze")
 
 
-class AquariumSetup(BaseModel):
+class AquariumPlanningResult(BaseModel):
     aquarium: Aquarium
     tech: List[Tech]
     fish: List[Fish]
