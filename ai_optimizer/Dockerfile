@@ -6,9 +6,9 @@ WORKDIR /app
 COPY ../requirements.txt /app/requirements.txt
 
 RUN pip install --no-cache-dir -r requirements.txt
-COPY ./ai_planner .
+COPY ./ai_optimizer .
 COPY ../.env /app/.env
 
-EXPOSE 8001
+EXPOSE 8002
 
-CMD ["uvicorn", "ai_planner:app", "--host", "0.0.0.0", "--port", "8001", "--log-level", "info"]
+CMD ["uvicorn", "ai_optimizer:app", "--host", "0.0.0.0", "--port", "8001", "--log-level", "info"]

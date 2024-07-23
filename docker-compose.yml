@@ -13,3 +13,9 @@ services:
       dockerfile: ai_planner/Dockerfile
     ports:
       - "8001:8001"
+  ai_optimizer:
+    build:
+      context: .
+      dockerfile: ai_optimizer/Dockerfile
+    ports:
+      - "8002:8002"
