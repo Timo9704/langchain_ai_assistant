@@ -11,4 +11,4 @@ COPY ../.env /app/.env
 
 EXPOSE 8002
 
-CMD ["uvicorn", "ai_optimizer:app", "--host", "0.0.0.0", "--port", "8001", "--log-level", "info"]
+CMD ["uvicorn", "ai_optimizer:app", "--host", "0.0.0.0", "--port", "8002", "--log-level", "info"]

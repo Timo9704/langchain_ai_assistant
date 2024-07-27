@@ -97,7 +97,7 @@ async def chat(request: RequestBody):
             get_session_history,
             input_messages_key="input",
             history_messages_key="chat_history",
-            output_messages_key="answer",
+            output_messages_key="answer"
         )
 
         answer = conversational_rag_chain.invoke(

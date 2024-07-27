@@ -3,6 +3,7 @@ from pydantic import BaseModel
 
 class RequestBody(BaseModel):
     planningMode: str
+    aquariumInfo: str
     availableSpace: int
     maxVolume: int
     needCabinet: bool
