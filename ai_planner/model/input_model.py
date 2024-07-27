@@ -19,18 +19,18 @@ class PlanningData(BaseModel):
 
 
 class AquariumDataNoLink(BaseModel):
-    aquariumName: str
+    aquarium_name: str
 
 
 class FishDataNoLink(BaseModel):
-    fishName: str
+    fish_lat_name: str
 
 
 class PlantDataNoLink(BaseModel):
-    plantName: str
+    plant_name: str
 
 
 class PlanningDataNoLink(BaseModel):
     aquarium: AquariumDataNoLink
-    fish: List[FishDataNoLink]
-    plant: List[PlantDataNoLink]
+    fishes: List[FishDataNoLink]
+    plants: List[PlantDataNoLink]

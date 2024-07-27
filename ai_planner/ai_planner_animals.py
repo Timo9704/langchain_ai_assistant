@@ -18,7 +18,7 @@ from langchain_community.utilities import SQLDatabase
 from sqlalchemy import create_engine
 
 from model.output_model import FishesPlanningResult
-from model.input_model import RequestBody
+from model.input_model import PlanningData
 
 load_dotenv()
 
@@ -61,7 +61,7 @@ def top5_results_fishes(query):
     return results
 
 
-async def planning_animals_controller(request: RequestBody):
+async def planning_animals_controller(request: PlanningData):
     pool = Pool()
     result1 = pool.apply_async(planning_fishes, [request])
     #result2 = pool.apply_async(planning_midground_plants, [request])
@@ -81,7 +81,7 @@ def convert_to_json(answer1):
     return structured_answer
 
 
-def planning_fishes(request: RequestBody):
+def planning_fishes(request: PlanningData):
     try:
         tools = [
             Tool(
@@ -129,7 +129,7 @@ def planning_fishes(request: RequestBody):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-def planning_midground_plants(request: RequestBody):
+def planning_midground_plants(request: PlanningData):
     try:
         tools = [
             Tool(
@@ -145,7 +145,7 @@ def planning_midground_plants(request: RequestBody):
             Tool(
                 name="Google Suche für Links zu Aquarienpflanzen",
                 description="Eine Websuche, um Links zu Planzen zu bekommen.",
-                func=top5_results_plants,
+                func=top5_results_fishes,
             ),
         ]
 
@@ -182,7 +182,7 @@ def planning_midground_plants(request: RequestBody):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-def planning_background_plants(request: RequestBody):
+def planning_background_plants(request: PlanningData):
     try:
         tools = [
             Tool(
@@ -198,7 +198,7 @@ def planning_background_plants(request: RequestBody):
             Tool(
                 name="Google Suche für Links zu Aquarienpflanzen",
                 description="Eine Websuche, um Links zu Planzen zu bekommen.",
-                func=top5_results_plants,
+                func=top5_results_fishes,
             ),
         ]
 

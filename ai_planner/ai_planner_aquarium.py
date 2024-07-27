@@ -20,7 +20,7 @@ from sqlalchemy import create_engine
 from ai_planner_animals import planning_animals_controller
 from ai_planner_plants import planning_plants_controller
 from model.output_model import AquariumPlanningResult
-from model.input_model import RequestBody
+from model.input_model import PlanningData
 
 load_dotenv()
 
@@ -63,7 +63,7 @@ def top2_results_aquarium(query):
     return results
 
 
-async def planning_aquarium_controller(request: RequestBody):
+async def planning_aquarium_controller(request: PlanningData):
     result1_task = asyncio.create_task(planning_aquarium(request))
     result2_task = asyncio.create_task(planning_animals_controller(request))
     result3_task = asyncio.create_task(planning_plants_controller(request))
@@ -82,7 +82,7 @@ def convert_to_json(answer1, answer2, answer3):
     return structured_answer
 
 
-async def planning_aquarium(request: RequestBody):
+async def planning_aquarium(request: PlanningData):
     try:
         tools = [
             Tool(
@@ -127,7 +127,7 @@ async def planning_aquarium(request: RequestBody):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-def planning_midground_plants(request: RequestBody):
+def planning_midground_plants(request: PlanningData):
     try:
         tools = [
             Tool(
@@ -179,7 +179,7 @@ def planning_midground_plants(request: RequestBody):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-def planning_background_plants(request: RequestBody):
+def planning_background_plants(request: PlanningData):
     try:
         tools = [
             Tool(

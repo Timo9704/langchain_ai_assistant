@@ -2,10 +2,11 @@ import logging
 
 from fastapi import FastAPI
 
+from ai_planner_links import search_links_controller
 from ai_planner_aquarium import planning_aquarium_controller
 from ai_planner_animals import planning_animals_controller
 from ai_planner_plants import planning_plants_controller
-from model.input_model import PlanningDataNoLink
+from model.input_model import PlanningDataNoLink, PlanningData
 
 # Logging config
 logging.basicConfig(level=logging.INFO)
@@ -26,6 +27,6 @@ async def chat(request: PlanningData):
         return await planning_plants_controller(request)
 
 
-@app.post("/planner/links")
+@app.post("/links/")
 async def chat(request: PlanningDataNoLink):
-    return await planning_aquarium_controller(request)
+    return await search_links_controller(request)

@@ -52,3 +52,24 @@ class AquariumPlanningResult(BaseModel):
     fishes: List[Fish]
     plants: List[Plant]
     reason: str = Field(..., description="Begründung für die Auswahl des Aquariums,der Fische und Pflanzen")
+
+
+class AquariumLink(BaseModel):
+    aquarium_name: str = Field(..., description="Name des Aquarium-Produkts")
+    link: str = Field(..., description="Link zum Online-Shop für das Aquarium")
+
+
+class FishLink(BaseModel):
+    fish_lat_name: str = Field(..., description="Lateinischer Name des Fisches")
+    fish_link: str = Field(..., description="Link zum Online-Shop für den Fisch")
+
+
+class PlantLink(BaseModel):
+    plant_name: str = Field(..., description="Name der Pflanze")
+    plant_link: str = Field(..., description="Link zum Online-Shop für die Pflanze")
+
+
+class PlanningDataLink(BaseModel):
+    aquarium: AquariumLink
+    fishes: List[FishLink]
+    plants: List[PlantLink]

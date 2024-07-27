@@ -18,7 +18,7 @@ from langchain_community.utilities import SQLDatabase
 from sqlalchemy import create_engine
 
 from model.output_model import PlantsPlanningResult
-from model.input_model import RequestBody
+from model.input_model import PlanningData
 
 load_dotenv()
 
@@ -61,7 +61,7 @@ def top5_results_plants(query):
     return results
 
 
-async def planning_plants_controller(request: RequestBody):
+async def planning_plants_controller(request: PlanningData):
     pool = Pool()
     result1 = pool.apply_async(planning_foreground_plants, [request])
     result2 = pool.apply_async(planning_midground_plants, [request])
@@ -82,7 +82,7 @@ def convert_to_json(answer1, answer2, answer3):
     return structured_answer
 
 
-def planning_foreground_plants(request: RequestBody):
+def planning_foreground_plants(request: PlanningData):
     try:
         tools = [
             Tool(
@@ -135,7 +135,7 @@ def planning_foreground_plants(request: RequestBody):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-def planning_midground_plants(request: RequestBody):
+def planning_midground_plants(request: PlanningData):
     try:
         tools = [
             Tool(
@@ -188,7 +188,7 @@ def planning_midground_plants(request: RequestBody):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-def planning_background_plants(request: RequestBody):
+def planning_background_plants(request: PlanningData):
     try:
         tools = [
             Tool(
