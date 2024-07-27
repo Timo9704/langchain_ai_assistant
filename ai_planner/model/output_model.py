@@ -49,6 +49,6 @@ class PlantsPlanningResult(BaseModel):
 
 class AquariumPlanningResult(BaseModel):
     aquarium: Aquarium
-    fish: List[Fish]
+    fishes: List[Fish]
     plants: List[Plant]
     reason: str = Field(..., description="Begründung für die Auswahl des Aquariums,der Fische und Pflanzen")

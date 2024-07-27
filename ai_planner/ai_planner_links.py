@@ -17,10 +17,11 @@ from langchain_experimental.sql import SQLDatabaseChain
 from langchain_community.utilities import SQLDatabase
 from sqlalchemy import create_engine
 
+
 from ai_planner_animals import planning_animals_controller
 from ai_planner_plants import planning_plants_controller
 from model.output_model import AquariumPlanningResult
-from model.input_model import RequestBody
+from model.input_model import PlanningDataNoLink
 
 load_dotenv()
 
@@ -63,7 +64,7 @@ def top2_results_aquarium(query):
     return results
 
 
-async def planning_aquarium_controller(request: RequestBody):
+async def planning_aquarium_controller(request: PlanningDataNoLink):
     result1_task = asyncio.create_task(planning_aquarium(request))
     result2_task = asyncio.create_task(planning_animals_controller(request))
     result3_task = asyncio.create_task(planning_plants_controller(request))

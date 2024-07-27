@@ -1,7 +1,9 @@
+from typing import List
+
 from pydantic import BaseModel
 
 
-class RequestBody(BaseModel):
+class PlanningData(BaseModel):
     planningMode: str
     aquariumInfo: str
     availableSpace: int
@@ -14,3 +16,21 @@ class RequestBody(BaseModel):
     useForegroundPlants: bool
     plantingIntensity: str
     maintenanceEffort: str
+
+
+class AquariumDataNoLink(BaseModel):
+    aquariumName: str
+
+
+class FishDataNoLink(BaseModel):
+    fishName: str
+
+
+class PlantDataNoLink(BaseModel):
+    plantName: str
+
+
+class PlanningDataNoLink(BaseModel):
+    aquarium: AquariumDataNoLink
+    fish: List[FishDataNoLink]
+    plant: List[PlantDataNoLink]
