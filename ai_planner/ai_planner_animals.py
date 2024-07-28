@@ -64,11 +64,7 @@ def top5_results_fishes(query):
 async def planning_animals_controller(request: PlanningData):
     pool = Pool()
     result1 = pool.apply_async(planning_fishes, [request])
-    #result2 = pool.apply_async(planning_midground_plants, [request])
-    #result3 = pool.apply_async(planning_background_plants, [request])
     answer1 = result1.get()
-    #answer2 = result2.get()
-    #answer3 = result3.get()
 
     structured_answer = convert_to_json(answer1)
 
@@ -115,113 +111,7 @@ def planning_fishes(request: PlanningData):
                        - KH: der gegebene Wert liegt zwischen min_KH und  max_KH
                        - liters: der gegebene Wert liegt zwischen min_liters und max_liters.
                        - Limitiere die Anzahl der Fische auf 5.
-                   - Suche zu jedem Fisch einen Link zu einer Website. 
                 Die Antwort ist eine unterteilte Liste in Deutsch. Wenn du keine Fische findest, schreibe 'Keine Fische gefunden!'.
-                """,
-        )
-
-        react_agent = create_react_agent(llm, tools, react_prompt)
-        agent_executor = AgentExecutor(agent=react_agent, tools=tools, handle_parsing_errors=True, maxIterations=2)
-        answer = agent_executor.invoke({"input": promptTemplate})["output"]
-        return answer
-    except Exception as e:
-        logger.error(f"Error: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-def planning_midground_plants(request: PlanningData):
-    try:
-        tools = [
-            Tool(
-                name="SQL Database",
-                func=db_chain_tool.run,
-                description="Eine SQL-Datenbank App-DB, wenn du nach Pflanzen in der Datenbank suchen sollst."
-            ),
-            Tool(
-                name="Calculator",
-                func=llm_math_chain_tool.run,
-                description="Ein Taschenrechner, wenn du mathematische Berechnungen durchführen möchtest."
-            ),
-            Tool(
-                name="Google Suche für Links zu Aquarienpflanzen",
-                description="Eine Websuche, um Links zu Planzen zu bekommen.",
-                func=top5_results_fishes,
-            ),
-        ]
-
-        promptTemplate = PromptTemplate.from_template(
-            template=f"""
-               Du bist ein Pflanzen-Planer für Aquarien. Deine Aufgabe ist es, geeignete Pflanzen für ein bestehendes Aquarium zu finden.
-                Deine Aufgabe ist es nun, geeignete Pflanzen für das Aquarium zu finden, die den Bedingungen entsprechen.
-                Dies sind Angaben zum bestehenden Aquarium: {request.aquariumInfo}
-
-                Wende folgendes Mapping an:
-                1. niedrig -> niedrig
-                2. mittel -> mittel + niedrig
-                3. hoch -> hoch + mittel + niedrig
-
-                1. **Auswahl geeigneter Pflanzen für das Aquarium**:
-                   - **Datenbankabfrage**: Suche in der Tabelle 'plants' der App-DB.
-                   - **Bedingungen**:
-                       - type: Mittelgrund.
-                       - co2_demand: Wenn keine CO2-Anlage vorhanden ist, dann dürfen die Pflanzen nur einen niedrigen CO2-Bedarf haben.
-                       - light_demand: Lichtbedarf ist "mittel" und darunter.
-                       - growth_rate: maximale Wuchsschnelligkeit ist "hoch" und darunter.
-                       - Limitiere die Anzahl der Pflanzen auf 3.
-                Die Antwort ist eine unterteilte Liste in Deutsch. Wenn du keine Pflanzen findest, schreibe 'Keine Pflanzen gefunden!'.
-                """,
-        )
-
-        react_agent = create_react_agent(llm, tools, react_prompt)
-        agent_executor = AgentExecutor(agent=react_agent, tools=tools, verbose=True, handle_parsing_errors=True,
-                                       maxIterations=2)
-        answer = agent_executor.invoke({"input": promptTemplate})["output"]
-        return answer
-    except Exception as e:
-        logger.error(f"Error: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-def planning_background_plants(request: PlanningData):
-    try:
-        tools = [
-            Tool(
-                name="SQL Database",
-                func=db_chain_tool.run,
-                description="Eine SQL-Datenbank App-DB, wenn du nach Pflanzen in der Datenbank suchen sollst."
-            ),
-            Tool(
-                name="Calculator",
-                func=llm_math_chain_tool.run,
-                description="Ein Taschenrechner, wenn du mathematische Berechnungen durchführen möchtest."
-            ),
-            Tool(
-                name="Google Suche für Links zu Aquarienpflanzen",
-                description="Eine Websuche, um Links zu Planzen zu bekommen.",
-                func=top5_results_fishes,
-            ),
-        ]
-
-        promptTemplate = PromptTemplate.from_template(
-            template=f"""
-                Du bist ein Pflanzen-Planer für Aquarien. Deine Aufgabe ist es, geeignete Pflanzen für ein bestehendes Aquarium zu finden.
-                Deine Aufgabe ist es nun, geeignete Pflanzen für das Aquarium zu finden, die den Bedingungen entsprechen.
-                Dies sind Angaben zum bestehenden Aquarium: {request.aquariumInfo}
-
-                Wende folgendes Mapping an:
-                1. niedrig -> niedrig
-                2. mittel -> mittel + niedrig
-                3. hoch -> hoch + mittel + niedrig
-
-                1. **Auswahl geeigneter Pflanzen für das Aquarium**:
-                   - **Datenbankabfrage**: Suche in der Tabelle 'plants' der App-DB.
-                   - **Bedingungen**:
-                       - type: Hintergrund.
-                       - co2_demand: Wenn keine CO2-Anlage vorhanden ist, dann dürfen die Pflanzen nur einen niedrigen CO2-Bedarf haben.
-                       - light_demand: Lichtbedarf ist "mittel" und darunter.
-                       - growth_rate: maximale Wuchsschnelligkeit ist "hoch" und darunter.
-                       - Limitiere die Anzahl der Pflanzen auf 3.
-                Die Antwort ist eine unterteilte Liste in Deutsch. Wenn du keine Pflanzen findest, schreibe 'Keine Pflanzen gefunden!'.
                 """,
         )
 

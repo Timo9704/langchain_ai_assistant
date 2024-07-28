@@ -121,7 +121,6 @@ def planning_foreground_plants(request: PlanningData):
                        - light_demand: Lichtbedarf ist "mittel" und darunter.
                        - growth_rate: maximale Wuchsschnelligkeit ist "hoch" und darunter.
                        - Limitiere die Anzahl der Pflanzen auf 3.
-                   - Suche zu jeder Pflanze einen Link zu einer Website.
                 Die Antwort ist eine unterteilte Liste in Deutsch. Wenn du keine Pflanzen findest, schreibe 'Keine Pflanzen gefunden!'.
                 """,
         )
@@ -174,7 +173,6 @@ def planning_midground_plants(request: PlanningData):
                        - light_demand: Lichtbedarf ist "mittel" und darunter.
                        - growth_rate: maximale Wuchsschnelligkeit ist "hoch" und darunter.
                        - Limitiere die Anzahl der Pflanzen auf 3.
-                   - Suche zu jeder Pflanze einen Link zu einer Website.
                 Die Antwort ist eine unterteilte Liste in Deutsch. Wenn du keine Pflanzen findest, schreibe 'Keine Pflanzen gefunden!'.
                 """,
         )
@@ -227,7 +225,6 @@ def planning_background_plants(request: PlanningData):
                        - light_demand: Lichtbedarf ist "mittel" und darunter.
                        - growth_rate: maximale Wuchsschnelligkeit ist "hoch" und darunter.
                        - Limitiere die Anzahl der Pflanzen auf 3.
-                   - Suche zu jeder Pflanze einen Link zu einer Website.
                 Die Antwort ist eine unterteilte Liste in Deutsch. Wenn du keine Pflanzen findest, schreibe 'Keine Pflanzen gefunden!'.
                 """,
         )
