@@ -63,22 +63,30 @@ def top2_results_aquarium(query):
     return results
 
 
-async def planning_aquarium_controller(request: PlanningData):
-    result1_task = asyncio.create_task(planning_aquarium(request))
-    result2_task = asyncio.create_task(planning_animals_controller(request))
-    result3_task = asyncio.create_task(planning_plants_controller(request))
+def results_tech(query):
+    results = search_aquarium.run(query)
+    return results
 
-    answer1 = await result1_task
+
+async def planning_aquarium_controller(request: PlanningData):
+    answer1 = await planning_aquarium(request)
+    request.aquariumInfo = answer1
+
+    result2_task = asyncio.create_task(planning_tech(request))
+    result3_task = asyncio.create_task(planning_animals_controller(request))
+    result4_task = asyncio.create_task(planning_plants_controller(request))
+
     answer2 = await result2_task
     answer3 = await result3_task
+    answer4 = await result4_task
 
-    structured_answer = convert_to_json(answer1, str(answer2), str(answer3))
+    structured_answer = convert_to_json(answer1, answer2, str(answer3), str(answer4))
     return structured_answer
 
 
-def convert_to_json(answer1, answer2, answer3):
+def convert_to_json(answer1, answer2, answer3, answer4):
     structured_llm = llm.with_structured_output(AquariumPlanningResult)
-    structured_answer = structured_llm.invoke(answer1 + " " + answer2 + " " + answer3)
+    structured_answer = structured_llm.invoke(answer1 + " " + answer2 + " " + answer3 + " " + answer4)
     return structured_answer
 
 
@@ -127,98 +135,40 @@ async def planning_aquarium(request: PlanningData):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-def planning_midground_plants(request: PlanningData):
+async def planning_tech(request: PlanningData):
     try:
         tools = [
-            Tool(
-                name="SQL Database",
-                func=db_chain_tool.run,
-                description="Eine SQL-Datenbank App-DB, wenn du nach Pflanzen in der Datenbank suchen sollst."
-            ),
             Tool(
                 name="Calculator",
                 func=llm_math_chain_tool.run,
                 description="Ein Taschenrechner, wenn du mathematische Berechnungen durchführen möchtest."
             ),
             Tool(
-                name="Google Suche für Links zu Aquarienpflanzen",
-                description="Eine Websuche, um Links zu Planzen zu bekommen.",
-                func=top2_results_aquarium,
+                name="Google Suche für Links zu Technikproukten",
+                description="Eine Websuche, um Technik oder Sets zu suchen.",
+                func=results_tech,
             ),
         ]
 
         promptTemplate = PromptTemplate.from_template(
             template=f"""
-               Du bist ein Pflanzen-Planer für Aquarien. Deine Aufgabe ist es, geeignete Pflanzen für ein bestehendes Aquarium zu finden.
-                Deine Aufgabe ist es nun, geeignete Pflanzen für das Aquarium zu finden, die den Bedingungen entsprechen.
+               Du bist ein Planer für die Auswahl der optimalen Technik für ein Aquariums. 
+                Deine Aufgabe ist es vorher zu prüfen, ob das Aquarium ein Set-Aquarium ist oder nicht.
+                
                 Dies sind Angaben zum bestehenden Aquarium: {request.aquariumInfo}
-
-                Wende folgendes Mapping an:
-                1. niedrig -> niedrig
-                2. mittel -> mittel + niedrig
-                3. hoch -> hoch + mittel + niedrig
-
-                1. **Auswahl geeigneter Pflanzen für das Aquarium**:
-                   - **Datenbankabfrage**: Suche in der Tabelle 'plants' der App-DB.
-                   - **Bedingungen**:
-                       - type: Mittelgrund.
-                       - co2_demand: Wenn keine CO2-Anlage vorhanden ist, dann dürfen die Pflanzen nur einen niedrigen CO2-Bedarf haben.
-                       - light_demand: Lichtbedarf ist "mittel" und darunter.
-                       - growth_rate: maximale Wuchsschnelligkeit ist "hoch" und darunter.
-                       - Limitiere die Anzahl der Pflanzen auf 3.
-                Die Antwort ist eine unterteilte Liste in Deutsch. Wenn du keine Pflanzen findest, schreibe 'Keine Pflanzen gefunden!'.
-                """,
-        )
-
-        react_agent = create_react_agent(llm, tools, react_prompt)
-        agent_executor = AgentExecutor(agent=react_agent, tools=tools, handle_parsing_errors=True, maxIterations=2)
-        answer = agent_executor.invoke({"input": promptTemplate})["output"]
-        return answer
-    except Exception as e:
-        logger.error(f"Error: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-def planning_background_plants(request: PlanningData):
-    try:
-        tools = [
-            Tool(
-                name="SQL Database",
-                func=db_chain_tool.run,
-                description="Eine SQL-Datenbank App-DB, wenn du nach Pflanzen in der Datenbank suchen sollst."
-            ),
-            Tool(
-                name="Calculator",
-                func=llm_math_chain_tool.run,
-                description="Ein Taschenrechner, wenn du mathematische Berechnungen durchführen möchtest."
-            ),
-            Tool(
-                name="Google Suche für Links zu Aquarienpflanzen",
-                description="Eine Websuche, um Links zu Planzen zu bekommen.",
-                func=top2_results_aquarium,
-            ),
-        ]
-
-        promptTemplate = PromptTemplate.from_template(
-            template=f"""
-                Du bist ein Pflanzen-Planer für Aquarien. Deine Aufgabe ist es, geeignete Pflanzen für ein bestehendes Aquarium zu finden.
-                Deine Aufgabe ist es nun, geeignete Pflanzen für das Aquarium zu finden, die den Bedingungen entsprechen.
-                Dies sind Angaben zum bestehenden Aquarium: {request.aquariumInfo}
-
-                Wende folgendes Mapping an:
-                1. niedrig -> niedrig
-                2. mittel -> mittel + niedrig
-                3. hoch -> hoch + mittel + niedrig
-
-                1. **Auswahl geeigneter Pflanzen für das Aquarium**:
-                   - **Datenbankabfrage**: Suche in der Tabelle 'plants' der App-DB.
-                   - **Bedingungen**:
-                       - type: Hintergrund.
-                       - co2_demand: Wenn keine CO2-Anlage vorhanden ist, dann dürfen die Pflanzen nur einen niedrigen CO2-Bedarf haben.
-                       - light_demand: Lichtbedarf ist "mittel" und darunter.
-                       - growth_rate: maximale Wuchsschnelligkeit ist "hoch" und darunter.
-                       - Limitiere die Anzahl der Pflanzen auf 3.
-                Die Antwort ist eine unterteilte Liste in Deutsch. Wenn du keine Pflanzen findest, schreibe 'Keine Pflanzen gefunden!'.
+                
+                1. **Prüfe ob das Aquarium ein Set-Aquarium ist**:
+                    - Suche in der Google Suche nach dem Namen des Aquariums.
+                      Es ist ein Set-Aquarium, wenn Hinweise gibt, dass ein Filter, Heizer und Beleuchtung dabei sind.
+                      Wenn es ein Set-Aquarium ist, dann schreibe für jedes Produkt, welches im Set enthalten ist: 'im Set enthalten' und überspringe den zweiten Schritt.
+                      Wenn es kein Set-Aquarium ist, dann gehe zum zweiten Schritt.
+                  
+                2. **Auswahl geeigneter Technik für das Aquarium**:
+                    - **Bedingungen**:
+                        - das Aquarium ist kein Set-Aquarium
+                    - Suche in der Google Suche nach einem Filter, Heizer und Beleuchtung für das Aquarium. Für Filter und Heizer achte auf die passende Größe.
+                    
+                Die Antwort ist eine unterteilte Liste in Deutsch.
                 """,
         )
 

@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Union
 
 
 class Aquarium(BaseModel):
@@ -11,9 +11,19 @@ class Aquarium(BaseModel):
     aquarium_price: str = Field(..., description="Preis des Aquariums")
 
 
-class Tech(BaseModel):
-    tech_name: str = Field(..., description="Name des Technikprodukts")
-    price: str = Field(..., description="Preis des Technikprodukts")
+class Filter(BaseModel):
+    filter_name: str = Field(..., description="Modell-Name des Filters")
+    filter_included: str = Field(..., description="Ist der Filter im Set enthalten?")
+
+
+class Heater(BaseModel):
+    heater_name: str = Field(..., description="Modell-Name des Heizers")
+    heater_included: str = Field(..., description="Ist der Heizer im Set enthalten?")
+
+
+class Lighting(BaseModel):
+    lighting_name: str = Field(..., description="Modell-Name der Beleuchtung")
+    lighting_included: str = Field(..., description="Ist die Beleuchtung im Set enthalten?")
 
 
 class Fish(BaseModel):
@@ -46,6 +56,7 @@ class PlantsPlanningResult(BaseModel):
 
 class AquariumPlanningResult(BaseModel):
     aquarium: Aquarium
+    technic: List[Union[Filter, Heater, Lighting]]
     fishes: List[Fish]
     plants: List[Plant]
     reason: str = Field(..., description="Begründung für die Auswahl des Aquariums,der Fische und Pflanzen")

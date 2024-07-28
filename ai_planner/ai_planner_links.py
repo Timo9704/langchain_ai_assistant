@@ -31,10 +31,16 @@ llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 react_prompt = hub.pull("hwchase17/react")
 
 search_aquarium = GoogleSearchAPIWrapper(google_cse_id=os.environ.get("GOOGLE_CSE_ID_AQUARIUM"))
+search_plants = GoogleSearchAPIWrapper(google_cse_id=os.environ.get("GOOGLE_CSE_ID_PLANTS"))
 
 
 def top2_results_aquarium(query):
     results = search_aquarium.results(query, 2)
+    return results
+
+
+def top2_results_plants(query):
+    results = search_plants.results(query, 2)
     return results
 
 
@@ -61,9 +67,14 @@ async def search_links(items):
     try:
         tools = [
             Tool(
-                name="Google Suche für Links zu Aquarien",
-                description="Eine Websuche, um Links zu Aquarien zu bekommen.",
+                name="Google Suche für Links zu Aquarien und Fische",
+                description="Eine Websuche, um Links zu Aquarien und Fische zu bekommen.",
                 func=top2_results_aquarium,
+            ),
+            Tool(
+                name="Google Suche für Links zu Pflanzen",
+                description="Eine Websuche, um Links zu Pflanzen zu bekommen.",
+                func=top2_results_plants,
             ),
         ]
 
@@ -83,6 +94,7 @@ async def search_links(items):
         promptTemplate = PromptTemplate.from_template(
             template=f"""
                 Suche zu jedem Eintrag nach einem Link und füge ihn hinzu.
+                Wenn es ein Link zu AquaSabi ist, dann füge '?ref=ak' hinzu.
                 Die Ausgabe sollte wie folgt aussehen: 'Name: XYZ, Link: https://www.beispiel.de'.
                 Wenn du keinen Link findest, schreibe 'kein Link gefunden'.
                 {names}
