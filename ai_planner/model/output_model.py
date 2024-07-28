@@ -13,17 +13,17 @@ class Aquarium(BaseModel):
 
 class Filter(BaseModel):
     filter_name: str = Field(..., description="Modell-Name des Filters")
-    filter_included: str = Field(..., description="Ist der Filter im Set enthalten?")
+    filter_included: str = Field(..., description="Ist der Filter im Set enthalten? Ja oder Nein?")
 
 
 class Heater(BaseModel):
     heater_name: str = Field(..., description="Modell-Name des Heizers")
-    heater_included: str = Field(..., description="Ist der Heizer im Set enthalten?")
+    heater_included: str = Field(..., description="Ist der Heizer im Set enthalten? Ja oder Nein?")
 
 
 class Lighting(BaseModel):
     lighting_name: str = Field(..., description="Modell-Name der Beleuchtung")
-    lighting_included: str = Field(..., description="Ist die Beleuchtung im Set enthalten?")
+    lighting_included: str = Field(..., description="Ist die Beleuchtung im Set enthalten? Ja oder Nein?")
 
 
 class Fish(BaseModel):
@@ -59,7 +59,7 @@ class AquariumPlanningResult(BaseModel):
     technic: List[Union[Filter, Heater, Lighting]]
     fishes: List[Fish]
     plants: List[Plant]
-    reason: str = Field(..., description="Begründung für die Auswahl des Aquariums,der Fische und Pflanzen")
+    reason: str = Field(..., description="Begründung für die Auswahl des Aquariums,der Fische und Pflanzen mit 3-4 Sätzen")
 
 
 class AquariumLink(BaseModel):

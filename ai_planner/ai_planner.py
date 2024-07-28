@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 
 from ai_planner_links import search_links_controller
 from ai_planner_aquarium import planning_aquarium_controller
@@ -19,14 +19,22 @@ app = FastAPI()
 
 @app.post("/planner/")
 async def chat(request: PlanningData):
-    if request.planningMode == "Aquarium":
-        return await planning_aquarium_controller(request)
-    elif request.planningMode == "Besatz":
-        return await planning_animals_controller(request)
-    elif request.planningMode == "Pflanzen":
-        return await planning_plants_controller(request)
+    try:
+        if request.planningMode == "Aquarium":
+            return await planning_aquarium_controller(request)
+        elif request.planningMode == "Besatz":
+            return await planning_animals_controller(request)
+        elif request.planningMode == "Pflanzen":
+            return await planning_plants_controller(request)
+    except Exception as e:
+        logger.error(f"Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/links/")
 async def chat(request: PlanningDataNoLink):
-    return await search_links_controller(request)
+    try:
+        return await search_links_controller(request)
+    except Exception as e:
+        logger.error(f"Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
