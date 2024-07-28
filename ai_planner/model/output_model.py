@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Union
+from typing import List, Union, Optional
 
 
 class Aquarium(BaseModel):
@@ -78,6 +78,6 @@ class PlantLink(BaseModel):
 
 
 class PlanningDataLink(BaseModel):
-    aquarium: AquariumLink
-    fishes: List[FishLink]
-    plants: List[PlantLink]
+    aquarium: Optional[AquariumLink] = None
+    fishes: Optional[List[FishLink]] = None
+    plants: Optional[List[PlantLink]] = None

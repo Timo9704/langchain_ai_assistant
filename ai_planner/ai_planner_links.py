@@ -89,22 +89,25 @@ async def search_links(items):
             elif isinstance(items, PlantDataNoLink):
                 names = items.plant_name
             else:
-                names = "Unknown item type"
+                names = ""
 
-        promptTemplate = PromptTemplate.from_template(
-            template=f"""
-                Suche zu jedem Eintrag nach einem Link und füge ihn hinzu.
-                Wenn es ein Link zu AquaSabi ist, dann füge '?ref=ak' hinzu.
-                Die Ausgabe sollte wie folgt aussehen: 'Name: XYZ, Link: https://www.beispiel.de'.
-                Wenn du keinen Link findest, schreibe 'kein Link gefunden'.
-                {names}
-                """,
-        )
+        if names != "":
+            promptTemplate = PromptTemplate.from_template(
+                template=f"""
+                    Suche zu jedem Eintrag nach einem Link und füge ihn hinzu.
+                    Wenn es ein Link zu AquaSabi ist, dann füge '?ref=ak' hinzu.
+                    Die Ausgabe sollte wie folgt aussehen: 'Name: XYZ, Link: https://www.beispiel.de'.
+                    Wenn du keinen Link findest, schreibe 'kein Link gefunden'.
+                    {names}
+                    """,
+            )
 
-        react_agent = create_react_agent(llm, tools, react_prompt)
-        agent_executor = AgentExecutor(agent=react_agent, tools=tools, handle_parsing_errors=True, maxIterations=2)
-        answer = agent_executor.invoke({"input": promptTemplate})["output"]
-        return answer
+            react_agent = create_react_agent(llm, tools, react_prompt)
+            agent_executor = AgentExecutor(agent=react_agent, tools=tools, handle_parsing_errors=True, maxIterations=2)
+            answer = agent_executor.invoke({"input": promptTemplate})["output"]
+            return answer
+        else:
+            return ""
     except Exception as e:
         logger.error(f"Error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
