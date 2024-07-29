@@ -71,7 +71,11 @@ data = [
     ('Diskus', 'Symphysodon discus', 'Südamerika', 29, 30, 5.0, 7.0, 1, 10, 1, 2, 300, 9999),
     ('Kupfersalmler', 'Hasemania nana', 'Südamerika', 22, 27, 6.0, 8.0, 1, 20, 1, 8, 80, 9999),
     ('Funkensalmler', 'Hyphessobrycon amandae', 'Südamerika', 20, 28, 5.0, 6.5, 1, 5, 1, 5, 54, 9999),
-    ('Guppy', 'Poecilia Reticulata', 'Südamerika', 20, 28, 7, 8, 5, 10, 5, 20, 54, 9999)
+    ('Guppy', 'Poecilia Reticulata', 'Südamerika', 20, 28, 7, 8, 5, 10, 5, 20, 54, 9999),
+    ('Siamesische Rüsselbarbe', 'Crossocheilus oblongus', 'Asien', 24, 26, 6.5, 7.5, 5, 15, 5, 15, 250, 9999),
+    ('Moskitobärbling', 'Boraras brigittae', 'Indonesien', 20, 28, 5.5, 7.5, 3, 10, 1, 5, 54, 9999),
+    ('Zebrabärbling', 'Danio rerio', 'Asien', 22, 26, 6.0, 7.5, 2, 15, 3, 15, 100, 9999),
+    ('Espes Keilfleckbärbling', 'Trigonostigma espei', 'Asien', 22, 27, 6.0, 7.5, 3, 15, 0, 10, 54, 9999)
 ]
 
 c.executemany('''
@@ -108,7 +112,11 @@ data = [
     ('Lilaeopsis brasiliensis', 'Vordergrund', 'langsam', 'mittel', 'mittel'),
     ('Marsilea hirsuta', 'Vordergrund', 'mittel', 'niedrig', 'niedrig'),
     ('Micranthemum callitrichoides', 'Vordergrund', 'mittel', 'hoch', 'hoch'),
-
+    ('Taxiphyllum sp. Flame Moss', 'Moos', 'langsam', 'niedrig', 'niedrig'),
+    ('Taxiphyllum alternans Taiwan Moss', 'Moos', 'mittel', 'niedrig', 'niedrig'),
+    ('Taxiphyllum barbieri Bogor Moss', 'Moos', 'mittel', 'niedrig', 'niedrig'),
+    ('Vesicularia ferriei Weeping Moss', 'Moos', 'mittel', 'mittel', 'niedrig'),
+    ('Vesicularia montagnei Christmas Moss', 'Moos', 'mittel', 'mittel', 'niedrig')
 ]
 
 c.executemany('INSERT INTO plants (name, type, growth_rate, light_demand, co2_demand) VALUES (?, ?, ?, ?, ?)', data)
