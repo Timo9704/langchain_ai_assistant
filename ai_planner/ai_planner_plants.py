@@ -1,11 +1,8 @@
 import logging
-import os
-from multiprocessing import Pool
+from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from fastapi import FastAPI, HTTPException
-from langchain_openai import OpenAIEmbeddings, ChatOpenAI
-from langchain_community.vectorstores import Pinecone
-from langchain_google_community import GoogleSearchAPIWrapper
+from langchain_openai import ChatOpenAI
 from dotenv import load_dotenv
 from langchain import hub
 from langchain.agents import AgentExecutor, create_react_agent
@@ -39,40 +36,28 @@ db_url = "sqlite:///app.db"
 db = SQLDatabase(create_engine(db_url))
 db_chain_tool = SQLDatabaseChain.from_llm(llm_db, db, return_direct=True)
 
-# Pinecone config
-embedding = OpenAIEmbeddings()
-pinecone_index = Pinecone.from_existing_index("aquabot", embedding=embedding)
 llm_math_chain_tool = LLMMathChain.from_llm(llm)
 
 # ReAct config
 react_prompt = hub.pull("hwchase17/react")
 
 
-def retrieve_knowledge(query: str):
-    results = pinecone_index.similarity_search(query, k=8)
-    return results
+def planning_plants_controller(request: PlanningData):
+    with ProcessPoolExecutor() as executor:
+        futures = [
+            executor.submit(planning_foreground_plants, request),
+            executor.submit(planning_midground_plants, request),
+            executor.submit(planning_background_plants, request)
+        ]
 
+        answers = []
+        for future in as_completed(futures):
+            answers.append(future.result())
 
-search_plants = GoogleSearchAPIWrapper(google_cse_id=os.environ.get("GOOGLE_CSE_ID_PLANTS"))
-
-
-def top5_results_plants(query):
-    results = search_plants.results(query, 2)
-    return results
-
-
-async def planning_plants_controller(request: PlanningData):
-    pool = Pool()
-    result1 = pool.apply_async(planning_foreground_plants, [request])
-    result2 = pool.apply_async(planning_midground_plants, [request])
-    result3 = pool.apply_async(planning_background_plants, [request])
-    answer1 = result1.get()
-    answer2 = result2.get()
-    answer3 = result3.get()
-    pool.close()
-
-    structured_answer = convert_to_json(answer1, answer2, answer3)
-
+    if request.planningMode == "Pflanzen":
+        structured_answer = convert_to_json(*answers)
+    else:
+        structured_answer = answers
     return structured_answer
 
 
@@ -94,11 +79,6 @@ def planning_foreground_plants(request: PlanningData):
                 name="Calculator",
                 func=llm_math_chain_tool.run,
                 description="Ein Taschenrechner, wenn du mathematische Berechnungen durchführen möchtest."
-            ),
-            Tool(
-                name="Google Suche für Links zu Aquarienpflanzen",
-                description="Eine Websuche, um Links zu Planzen zu bekommen.",
-                func=top5_results_plants,
             ),
         ]
 
@@ -146,12 +126,7 @@ def planning_midground_plants(request: PlanningData):
                 name="Calculator",
                 func=llm_math_chain_tool.run,
                 description="Ein Taschenrechner, wenn du mathematische Berechnungen durchführen möchtest."
-            ),
-            Tool(
-                name="Google Suche für Links zu Aquarienpflanzen",
-                description="Eine Websuche, um Links zu Planzen zu bekommen.",
-                func=top5_results_plants,
-            ),
+            )
         ]
 
         promptTemplate = PromptTemplate.from_template(
@@ -198,12 +173,7 @@ def planning_background_plants(request: PlanningData):
                 name="Calculator",
                 func=llm_math_chain_tool.run,
                 description="Ein Taschenrechner, wenn du mathematische Berechnungen durchführen möchtest."
-            ),
-            Tool(
-                name="Google Suche für Links zu Aquarienpflanzen",
-                description="Eine Websuche, um Links zu Planzen zu bekommen.",
-                func=top5_results_plants,
-            ),
+            )
         ]
 
         promptTemplate = PromptTemplate.from_template(
