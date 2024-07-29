@@ -78,6 +78,6 @@ class PlantLink(BaseModel):
 
 
 class PlanningDataLink(BaseModel):
-    aquarium: Optional[AquariumLink] = None
-    fishes: Optional[List[FishLink]] = None
-    plants: Optional[List[PlantLink]] = None
+    aquarium: AquariumLink
+    fishes: List[FishLink]
+    plants: List[PlantLink]
