@@ -1,11 +1,8 @@
 import logging
-import os
 from multiprocessing import Pool
 
 from fastapi import FastAPI, HTTPException
-from langchain_openai import OpenAIEmbeddings, ChatOpenAI
-from langchain_community.vectorstores import Pinecone
-from langchain_google_community import GoogleSearchAPIWrapper
+from langchain_openai import ChatOpenAI
 from dotenv import load_dotenv
 from langchain import hub
 from langchain.agents import AgentExecutor, create_react_agent
@@ -39,34 +36,22 @@ db_url = "sqlite:///app.db"
 db = SQLDatabase(create_engine(db_url))
 db_chain_tool = SQLDatabaseChain.from_llm(llm_db, db, return_direct=True)
 
-# Pinecone config
-embedding = OpenAIEmbeddings()
-pinecone_index = Pinecone.from_existing_index("aquabot", embedding=embedding)
 llm_math_chain_tool = LLMMathChain.from_llm(llm)
 
 # ReAct config
 react_prompt = hub.pull("hwchase17/react")
 
 
-def retrieve_knowledge(query: str):
-    results = pinecone_index.similarity_search(query, k=8)
-    return results
-
-
-search_fishes = GoogleSearchAPIWrapper(google_cse_id=os.environ.get("GOOGLE_CSE_ID_FISHES"))
-
-
-def top5_results_fishes(query):
-    results = search_fishes.results(query, 2)
-    return results
-
-
-async def planning_animals_controller(request: PlanningData):
+def planning_animals_controller(request: PlanningData):
     pool = Pool()
     result1 = pool.apply_async(planning_fishes, [request])
     answer1 = result1.get()
+    pool.close()
 
-    structured_answer = convert_to_json(answer1)
+    if request.planningMode == "Besatz":
+        structured_answer = convert_to_json(answer1)
+    else:
+        structured_answer = answer1
 
     return structured_answer
 
@@ -89,12 +74,7 @@ def planning_fishes(request: PlanningData):
                 name="Calculator",
                 func=llm_math_chain_tool.run,
                 description="Ein Taschenrechner, wenn du mathematische Berechnungen durchführen möchtest."
-            ),
-            Tool(
-                name="Google Suche für Links zu Fischen",
-                description="Eine Websuche, um Links zu Fischen zu bekommen.",
-                func=top5_results_fishes,
-            ),
+            )
         ]
 
         promptTemplate = PromptTemplate.from_template(
