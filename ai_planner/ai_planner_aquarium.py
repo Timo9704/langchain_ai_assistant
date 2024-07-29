@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import os
+from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from fastapi import FastAPI, HTTPException
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
@@ -59,7 +60,7 @@ search_aquarium = GoogleSearchAPIWrapper(google_cse_id=os.environ.get("GOOGLE_CS
 
 
 def top2_results_aquarium(query):
-    results = search_aquarium.results(query, 2)
+    results = search_aquarium.run(query)
     return results
 
 
@@ -69,28 +70,32 @@ def results_tech(query):
 
 
 async def planning_aquarium_controller(request: PlanningData):
-    answer1 = await planning_aquarium(request)
+    answers = []
+    answer1 = planning_aquarium(request)
     request.aquariumInfo = answer1
+    answers.append(answer1)
 
-    result2_task = asyncio.create_task(planning_tech(request))
-    result3_task = asyncio.create_task(planning_animals_controller(request))
-    result4_task = asyncio.create_task(planning_plants_controller(request))
+    with ProcessPoolExecutor() as executor:
+        futures = [
+            executor.submit(planning_tech, request),
+            executor.submit(planning_animals_controller, request),
+            executor.submit(planning_plants_controller, request)
+        ]
 
-    answer2 = await result2_task
-    answer3 = await result3_task
-    answer4 = await result4_task
+        for future in as_completed(futures):
+            answers.append(future.result())
 
-    structured_answer = convert_to_json(answer1, answer2, str(answer3), str(answer4))
+    structured_answer = convert_to_json(*answers)
     return structured_answer
 
 
 def convert_to_json(answer1, answer2, answer3, answer4):
     structured_llm = llm.with_structured_output(AquariumPlanningResult)
-    structured_answer = structured_llm.invoke(answer1 + " " + answer2 + " " + answer3 + " " + answer4)
+    structured_answer = structured_llm.invoke(str(answer1) + " " + str(answer2) + " " + str(answer3) + " " + str(answer4))
     return structured_answer
 
 
-async def planning_aquarium(request: PlanningData):
+def planning_aquarium(request: PlanningData):
     try:
         tools = [
             Tool(
@@ -104,8 +109,8 @@ async def planning_aquarium(request: PlanningData):
                 description="Ein Taschenrechner, wenn du mathematische Berechnungen durchführen möchtest."
             ),
             Tool(
-                name="Google Suche für Links zu Aquarien",
-                description="Eine Websuche, um Links zu Aquarien zu bekommen.",
+                name="Google Suche zu Aquarien",
+                description="Eine Websuche, um Infomationen zu Aquarien zu bekommen.",
                 func=top2_results_aquarium,
             ),
         ]
@@ -122,6 +127,8 @@ async def planning_aquarium(request: PlanningData):
                        - volume: Weniger als oder gleich {request.maxVolume} Liter, aber nicht weniger als 54 Liter.
                        - price: Weniger als oder gleich {request.maxCost}
                        - Wenn mehrere passende Aquarien gefunden werden, wähle das größere aus.
+                2. **Überprüfung des Preises**:
+                     - Suche nach dem aktuellen Preis des ausgewählten Aquariums in der Google Suche.
                 Deine Antwort ist das Aquarium mit allen vorhandenen Informationen auf Deutsch!'.
                 """,
         )
@@ -135,7 +142,7 @@ async def planning_aquarium(request: PlanningData):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-async def planning_tech(request: PlanningData):
+def planning_tech(request: PlanningData):
     try:
         tools = [
             Tool(
@@ -152,7 +159,7 @@ async def planning_tech(request: PlanningData):
 
         promptTemplate = PromptTemplate.from_template(
             template=f"""
-               Du bist ein Planer für die Auswahl der optimalen Technik für ein Aquariums. 
+                Du bist ein Planer für die Auswahl der optimalen Technik für ein Aquariums. 
                 Deine Aufgabe ist es vorher zu prüfen, ob das Aquarium ein Set-Aquarium ist oder nicht.
                 
                 Dies sind Angaben zum bestehenden Aquarium: {request.aquariumInfo}
@@ -160,13 +167,15 @@ async def planning_tech(request: PlanningData):
                 1. **Prüfe ob das Aquarium ein Set-Aquarium ist**:
                     - Suche in der Google Suche nach dem Namen des Aquariums.
                       Es ist ein Set-Aquarium, wenn Hinweise gibt, dass ein Filter, Heizer und Beleuchtung dabei sind.
-                      Wenn es ein Set-Aquarium ist, dann schreibe für jedes Produkt, welches im Set enthalten ist: 'im Set enthalten' und überspringe den zweiten Schritt.
+                      Wenn es ein Set-Aquarium ist, dann schreibe für jedes Produkt, welches im Set enthalten ist: 'im Set enthalten', aber schreibe auch den Modellnamen auf. Überspringe den zweiten Schritt.
                       Wenn es kein Set-Aquarium ist, dann gehe zum zweiten Schritt.
                   
                 2. **Auswahl geeigneter Technik für das Aquarium**:
                     - **Bedingungen**:
                         - das Aquarium ist kein Set-Aquarium
-                    - Suche in der Google Suche nach einem Filter, Heizer und Beleuchtung für das Aquarium. Für Filter und Heizer achte auf die passende Größe.
+                        - Suche in der Google Suche nach einem Filter auf Aquariumfilter in Kombination mit der Literanzahl des Aquariums.
+                        - Suche in der Google Suche nach einem Heizer auf Aquariumheizer in Kombination mit der Literanzahl des Aquariums.
+                        - Suche in der Google Suche nach einer Beleuchtung auf Aquariumbeleuchtung in Kombination mit der Literanzahl des Aquariums.
                     
                 Die Antwort ist eine unterteilte Liste in Deutsch.
                 """,
