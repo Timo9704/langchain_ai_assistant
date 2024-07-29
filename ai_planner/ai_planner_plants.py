@@ -33,7 +33,7 @@ llm_db = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
 
 # SQL config
 db_url = "sqlite:///app.db"
-db = SQLDatabase(create_engine(db_url))
+db = SQLDatabase.from_uri(db_url)
 db_chain_tool = SQLDatabaseChain.from_llm(llm_db, db, return_direct=True)
 
 llm_math_chain_tool = LLMMathChain.from_llm(llm)
@@ -43,22 +43,26 @@ react_prompt = hub.pull("hwchase17/react")
 
 
 def planning_plants_controller(request: PlanningData):
-    with ProcessPoolExecutor() as executor:
-        futures = [
-            executor.submit(planning_foreground_plants, request),
-            executor.submit(planning_midground_plants, request),
-            executor.submit(planning_background_plants, request)
-        ]
+    try:
+        with ProcessPoolExecutor() as executor:
+            futures = [
+                executor.submit(planning_foreground_plants, request),
+                executor.submit(planning_midground_plants, request),
+                executor.submit(planning_background_plants, request)
+            ]
 
-        answers = []
-        for future in as_completed(futures):
-            answers.append(future.result())
+            answers = []
+            for future in as_completed(futures):
+                answers.append(future.result())
 
-    if request.planningMode == "Pflanzen":
-        structured_answer = convert_to_json(*answers)
-    else:
-        structured_answer = answers
-    return structured_answer
+        if request.planningMode == "Pflanzen":
+            structured_answer = convert_to_json(*answers)
+        else:
+            structured_answer = answers
+        return structured_answer
+    except Exception as e:
+        logger.error(f"Error: {str(e)}")
+        return ""
 
 
 def convert_to_json(answer1, answer2, answer3):
@@ -106,7 +110,7 @@ def planning_foreground_plants(request: PlanningData):
         )
 
         react_agent = create_react_agent(llm, tools, react_prompt)
-        agent_executor = AgentExecutor(agent=react_agent, tools=tools, handle_parsing_errors=True, maxIterations=2)
+        agent_executor = AgentExecutor(agent=react_agent, tools=tools, handle_parsing_errors=True)
         answer = agent_executor.invoke({"input": promptTemplate})["output"]
         return answer
     except Exception as e:
@@ -153,7 +157,7 @@ def planning_midground_plants(request: PlanningData):
         )
 
         react_agent = create_react_agent(llm, tools, react_prompt)
-        agent_executor = AgentExecutor(agent=react_agent, tools=tools, handle_parsing_errors=True, maxIterations=2)
+        agent_executor = AgentExecutor(agent=react_agent, tools=tools, handle_parsing_errors=True)
         answer = agent_executor.invoke({"input": promptTemplate})["output"]
         return answer
     except Exception as e:
@@ -200,7 +204,7 @@ def planning_background_plants(request: PlanningData):
         )
 
         react_agent = create_react_agent(llm, tools, react_prompt)
-        agent_executor = AgentExecutor(agent=react_agent, tools=tools, handle_parsing_errors=True, maxIterations=2)
+        agent_executor = AgentExecutor(agent=react_agent, tools=tools, handle_parsing_errors=True)
         answer = agent_executor.invoke({"input": promptTemplate})["output"]
         return answer
     except Exception as e:
