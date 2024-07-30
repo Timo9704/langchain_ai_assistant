@@ -9,6 +9,7 @@ class PlanningData(BaseModel):
     availableSpace: int
     maxVolume: int
     needCabinet: bool
+    isSet: bool
     maxCost: int
     favoriteFishList: str
     waterValues: str

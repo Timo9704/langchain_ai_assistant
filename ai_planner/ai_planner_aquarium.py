@@ -1,9 +1,12 @@
 import asyncio
 import logging
 import os
+import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from fastapi import FastAPI, HTTPException
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnablePassthrough
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_community.vectorstores import Pinecone
 from langchain_google_community import GoogleSearchAPIWrapper
@@ -70,14 +73,17 @@ def results_tech(query):
 
 
 async def planning_aquarium_controller(request: PlanningData):
+    start_time = time.time()
     answers = []
     answer1 = planning_aquarium(request)
     request.aquariumInfo = answer1
     answers.append(answer1)
+    end_time = time.time()
+    logger.error(f"Planning Aquarium took {end_time - start_time} seconds")
 
     with ProcessPoolExecutor() as executor:
         futures = [
-            executor.submit(planning_tech, request),
+            #executor.submit(planning_tech, request),
             executor.submit(planning_animals_controller, request),
             executor.submit(planning_plants_controller, request)
         ]
@@ -89,60 +95,56 @@ async def planning_aquarium_controller(request: PlanningData):
     return structured_answer
 
 
-def convert_to_json(answer1, answer2, answer3, answer4):
+def convert_to_json(answer1, answer2, answer3):
     structured_llm = llm.with_structured_output(AquariumPlanningResult)
-    structured_answer = structured_llm.invoke(str(answer1) + " " + str(answer2) + " " + str(answer3) + " " + str(answer4))
+    structured_answer = structured_llm.invoke(str(answer1) + " " + str(answer2) + " " + str(answer3))
     return structured_answer
+
+def format_docs(docs):
+    return "\n\n".join(doc.page_content for doc in docs)
 
 
 def planning_aquarium(request: PlanningData):
     try:
-        tools = [
-            Tool(
-                name="SQL Database App-DB",
-                func=db_chain_tool.run,
-                description="Eine SQL-Datenbank App-DB, wenn du nach Aquarien in der Datenbank suchen sollst."
-            ),
-            Tool(
-                name="Calculator",
-                func=llm_math_chain_tool.run,
-                description="Ein Taschenrechner, wenn du mathematische Berechnungen durchführen möchtest."
-            ),
-            Tool(
-                name="Google Suche zu Aquarien",
-                description="Eine Websuche, um Infomationen zu Aquarien zu bekommen.",
-                func=top2_results_aquarium,
-            ),
-        ]
+        vectorstore = Pinecone.from_existing_index("aiplanneraquarium", embedding=OpenAIEmbeddings())
+        retriever = vectorstore.as_retriever(search_kwargs={"k": 10})
 
-        promptTemplate = PromptTemplate.from_template(
-            template=f"""
-                Du bist ein Planer für die Auswahl eines optimalen Aquariums für einen Kunden. 
-                Deine Aufgabe ist es, ein geeignete Aquarien auf Basis von Anforderungen auszuwählen.
+        prompt = hub.pull("rlm/rag-prompt")
 
-                1. **Auswahl geeigneter Fische für das Aquarium**:
-                   - **Datenbankabfrage**: Suche in der Tabelle 'aquarium' der App-DB.
-                   - **Bedingungen**:
-                       - length: Weniger als oder gleich {request.availableSpace} cm
-                       - volume: Weniger als oder gleich {request.maxVolume} Liter, aber nicht weniger als 54 Liter.
-                       - price: Weniger als oder gleich {request.maxCost}
-                       - Wenn mehrere passende Aquarien gefunden werden, wähle das größere aus.
-                2. **Überprüfung des Preises**:
-                     - Suche nach dem aktuellen Preis des ausgewählten Aquariums in der Google Suche.
-                Deine Antwort ist das Aquarium mit allen vorhandenen Informationen auf Deutsch!'.
-                """,
+        rag_chain = (
+                {"context": retriever | format_docs, "question": RunnablePassthrough()}
+                | prompt
+                | llm
+                | StrOutputParser()
         )
 
-        react_agent = create_react_agent(llm, tools, react_prompt)
-        agent_executor = AgentExecutor(agent=react_agent, tools=tools, handle_parsing_errors=True, maxIterations=2)
-        answer = agent_executor.invoke({"input": promptTemplate})["output"]
-        return answer
+        # Definieren des Prompts, um mit dem RAG Chain zu interagieren
+        prompt = f"""
+            Du bist ein Planer für die Auswahl eines optimalen Aquariums für einen Kunden. 
+                Deine Aufgabe ist es, ein geeignete Aquarien auf Basis von Anforderungen auszuwählen.
+                
+                Dies sind die Anforderungen des Kunden:
+                Das Aquarium muss weniger als {request.availableSpace} cm lang sein.
+                Das Aquarium muss weniger als {request.maxVolume} Liter fassen, aber nicht weniger als 54 Liter.
+                Das Aquarium muss weniger als {request.maxCost} Euro kosten.
+                Das Aquarium muss {'mit' if request.needCabinet else 'ohne'} Unterschrank sein.
+                Das Aquarium {'muss ein' if request.isSet else 'darf auf keinen Fall ein'} Set mit Filter, Beleuchtung und Heizer sein.
+                Wenn mehrere passende Aquarien gefunden werden, wähle das größere aus.
+                
+                Deine Antwort ist das Aquarium mit allen vorhandenen Informationen auf Deutsch!'.
+        """
+
+        result = rag_chain.invoke(prompt)
+        print(result)
+        return result
+
     except Exception as e:
         logger.error(f"Error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
 def planning_tech(request: PlanningData):
+    start_time = time.time()
     try:
         tools = [
             Tool(
@@ -184,6 +186,8 @@ def planning_tech(request: PlanningData):
         react_agent = create_react_agent(llm, tools, react_prompt)
         agent_executor = AgentExecutor(agent=react_agent, tools=tools, handle_parsing_errors=True, maxIterations=2)
         answer = agent_executor.invoke({"input": promptTemplate})["output"]
+        end_time = time.time()
+        logger.error(f"Planning Technik took {end_time - start_time} seconds")
         return answer
     except Exception as e:
         logger.error(f"Error: {str(e)}")
