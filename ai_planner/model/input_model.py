@@ -7,6 +7,7 @@ class PlanningData(BaseModel):
     planningMode: str
     aquariumInfo: str
     availableSpace: int
+    minVolume: int
     maxVolume: int
     needCabinet: bool
     isSet: bool

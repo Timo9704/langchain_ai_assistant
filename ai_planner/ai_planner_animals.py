@@ -20,7 +20,6 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('uvicorn.error')
 logger.setLevel(logging.INFO)
 
-
 # LLM config
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
@@ -54,6 +53,7 @@ def convert_to_json(answer1):
     structured_answer = structured_llm.invoke(answer1)
     return structured_answer
 
+
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 
@@ -72,17 +72,19 @@ def planning_fishes(request: PlanningData):
                 | StrOutputParser()
         )
 
-        # Definieren des Prompts, um mit dem RAG Chain zu interagieren
         prompt = f"""
             Du bist ein Planer für die Auswahl von Fischen, Garnelen und Schnecken für Aquarien. 
                 Deine Aufgabe ist es, geeignete Tiere für ein bestehendes Aquarium zu finden.
-                Dies sind Angaben zum bestehenden Aquarium: {request.aquariumInfo}
+                Infos zum Aquarium: {request.aquariumInfo}
                 Die Wasserwerte sind: {request.waterValues}
 
                 1. **Auswahl geeigneter Fische für das Aquarium und die gegebenen Wasserwerte**:
                    - **Bedingungen**:
-                       - Die Fische müssen sich mit den gegebenen Wasserwerten vertragen.
-                       - Die Fische dürfen auf gar keinen Fall mehr Platz beanspruchen, als das Aquarium bietet.
+                       - Die Fische müssen zu den gegebenen Wasserwerten passen.
+                       - Die Fische dürfen auf gar keinen Fall mehr Aquarium-Volumen beanspruchen, als das Aquarium bietet.
+                       - Der Aquarianer möchte diese Fische in seinem Aquarium haben. Liebingstiere sind: {request.favoriteFishList}, aber nur wenn sie zu den Wasserwerten passen und das Aquarium nicht zu klein ist.
+                       Wenn die Lieblingstiere nicht passen, dann begründe ausführlich warum sie nicht passen.
+                       
                        - Begrenze die Anzahl der Fische auf 5.
                        
                 Die Antwort ist eine unterteilte Liste in Deutsch mit Name des Fisches, Temperatur, pH-Wert, GH-Wert, KH-Wert und Beckengröße der einzelnen Fische.

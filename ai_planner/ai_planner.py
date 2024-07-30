@@ -23,7 +23,7 @@ async def chat(request: PlanningData):
         if request.planningMode == "Aquarium":
             return await planning_aquarium_controller(request)
         elif request.planningMode == "Besatz":
-            return await planning_animals_controller(request)
+            return planning_animals_controller(request)
         elif request.planningMode == "Pflanzen":
             return planning_plants_controller(request)
     except Exception as e:

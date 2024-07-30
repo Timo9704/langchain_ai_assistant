@@ -31,21 +31,16 @@ class Lighting(BaseModel):
 class Fish(BaseModel):
     fish_common_name: str = Field(..., description="Umgangsprachlicher Name des Fisches")
     fish_lat_name: str = Field(..., description="Lateinischer Name des Fisches")
-    fish_ph: str = Field(...,
-                         description="pH-Wert-Bereich des Wassers, in dem der Fisch gehalten werden kann, Beispiel: 6-8")
-    fish_gh: str = Field(...,
-                         description="GH-Wert-Bereich des Wassers, in dem der Fisch gehalten werden kann,Beispiel: 5-15 °dGH")
-    fish_kh: str = Field(...,
-                         description="KH-Wert-Bereich des Wassers, in dem der Fisch gehalten werden kann: Beispiel: 0-0 °dKH")
-    fish_min_temp: str = Field(...,
-                               description="Temperatur-Bereich, bei der der Fisch gehalten werden kann, Beispiel: 24-28 °C")
-    fish_min_liters: str = Field(...,
-                                 description="Ab wie viel Litern der Fisch gehalten werden kann, Beispiel: ab 100 Liter")
+    fish_ph: str = Field(..., description="pH-Wert-Bereich des Wassers, in dem der Fisch gehalten werden kann, Beispiel: 6-8")
+    fish_gh: str = Field(..., description="GH-Wert-Bereich des Wassers, in dem der Fisch gehalten werden kann,Beispiel: 5-15 °dGH")
+    fish_kh: str = Field(..., description="KH-Wert-Bereich des Wassers, in dem der Fisch gehalten werden kann: Beispiel: 2-10 °dKH, kein Wert, dann Beispiel: NaN °dKH")
+    fish_min_temp: str = Field(..., description="Temperatur-Bereich, bei der der Fisch gehalten werden kann, Beispiel: 24-28 °C")
+    fish_min_liters: str = Field(..., description="Ab wie viel Litern der Fisch gehalten werden kann, Beispiel: ab 100 Liter")
 
 
 class Plant(BaseModel):
     plant_name: str = Field(..., description="Name der Pflanze")
-    plant_type: str = Field(..., description="Typ der Pflanze, z.B. Vordergrund, Mittelgrund, Hintergrund")
+    plant_type: str = Field(..., description="Typ der Pflanze, Beispiel: Vordergrund, Beispiel: Hintergrund")
     plant_growth_rate: str = Field(..., description="Wachstumsgeschwindigkeit der Pflanze, Beispiel: langsam")
     plant_light_demand: str = Field(..., description="Lichtbedarf der Pflanze, Beispiel: mittel")
     plant_co2_demand: str = Field(..., description="CO2-Bedarf der Pflanze, Beispiel: hoch")
@@ -53,14 +48,19 @@ class Plant(BaseModel):
 
 class FishesPlanningResult(BaseModel):
     fishes: List[Fish]
-    reason: str = Field(..., description="Begründung für die Auswahl der Fische")
+    reason: str = Field(..., description="Begründung für die Auswahl der Fische mit 3-4 Sätzen")
 
 
 class PlantsPlanningResult(BaseModel):
-    plant: List[Plant]
+    plants: List[Plant]
     foreground_plants: str = Field(..., description="Anzahl der Vordergrundpflanzen, Beispiel: 3 Stück")
     midground_plants: str = Field(..., description="Anzahl der Mittelgrundpflanzen, Beispiel: 3 Stück")
     background_plants: str = Field(..., description="Anzahl der Hintergrundpflanzen, Beispiel: 3 Stück")
+
+
+class PlantsPlanningResultWrapper(BaseModel):
+    plants: PlantsPlanningResult
+    reason: str = Field(..., description="Begründung für die Auswahl der Pflanzen mit 3-4 Sätzen")
 
 
 class AquariumPlanningResult(BaseModel):

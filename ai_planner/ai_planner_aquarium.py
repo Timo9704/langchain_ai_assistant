@@ -1,10 +1,9 @@
-import asyncio
 import logging
 import os
 import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
-from fastapi import FastAPI, HTTPException
+from fastapi import HTTPException
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
@@ -13,13 +12,8 @@ from langchain_google_community import GoogleSearchAPIWrapper
 from dotenv import load_dotenv
 from langchain import hub
 from langchain.agents import AgentExecutor, create_react_agent
-from langchain.chains.llm_math.base import LLMMathChain
 from langchain_core.tools import Tool
 from langchain_core.prompts import PromptTemplate
-
-from langchain_experimental.sql import SQLDatabaseChain
-from langchain_community.utilities import SQLDatabase
-from sqlalchemy import create_engine
 
 from ai_planner_animals import planning_animals_controller
 from ai_planner_plants import planning_plants_controller
@@ -79,7 +73,7 @@ def format_docs(docs):
 def planning_aquarium(request: PlanningData):
     try:
         vectorstore = Pinecone.from_existing_index("aiplanneraquarium", embedding=OpenAIEmbeddings())
-        retriever = vectorstore.as_retriever(search_kwargs={"k": 10})
+        retriever = vectorstore.as_retriever(search_kwargs={"k": 16})
 
         prompt = hub.pull("rlm/rag-prompt")
 
@@ -90,24 +84,21 @@ def planning_aquarium(request: PlanningData):
                 | StrOutputParser()
         )
 
-        # Definieren des Prompts, um mit dem RAG Chain zu interagieren
         prompt = f"""
             Du bist ein Planer für die Auswahl eines optimalen Aquariums für einen Kunden. 
                 Deine Aufgabe ist es, ein geeignete Aquarien auf Basis von Anforderungen auszuwählen.
                 
                 Dies sind die Anforderungen des Kunden:
                 Das Aquarium muss weniger als {request.availableSpace} cm lang sein.
-                Das Aquarium muss weniger als {request.maxVolume} Liter fassen, aber nicht weniger als 54 Liter.
+                Das Aquarium muss zwischen {request.minVolume} als {request.maxVolume} Liter fassen.
                 Das Aquarium muss weniger als {request.maxCost} Euro kosten.
                 Das Aquarium muss {'mit' if request.needCabinet else 'ohne'} Unterschrank sein.
                 Das Aquarium {'muss ein' if request.isSet else 'darf auf keinen Fall ein'} Set mit Filter, Beleuchtung und Heizer sein.
-                Wenn mehrere passende Aquarien gefunden werden, wähle das größere aus.
                 
                 Deine Antwort ist eine Liste mit Name des Aquariums, alle Eigenschaften und Produkten auf Deutsch!'.
         """
 
         result = rag_chain.invoke(prompt)
-        print(result)
         return result
 
     except Exception as e:
