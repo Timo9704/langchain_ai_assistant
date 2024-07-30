@@ -1,17 +1,13 @@
 import logging
 import time
-from multiprocessing import Pool
 
-from fastapi import FastAPI, HTTPException
+from fastapi import HTTPException
 from langchain_community.vectorstores import Pinecone
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from dotenv import load_dotenv
 from langchain import hub
-from langchain.agents import AgentExecutor, create_react_agent
-from langchain_core.tools import Tool
-from langchain_core.prompts import PromptTemplate
 
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from model.output_model import FishesPlanningResult
@@ -24,14 +20,9 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('uvicorn.error')
 logger.setLevel(logging.INFO)
 
-# FastAPI config
-app = FastAPI()
 
 # LLM config
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
-
-# ReAct config
-react_prompt = hub.pull("hwchase17/react")
 
 
 def planning_animals_controller(request: PlanningData):
@@ -46,7 +37,7 @@ def planning_animals_controller(request: PlanningData):
             for future in as_completed(futures):
                 answers.append(future.result())
 
-        if request.planningMode == "Pflanzen":
+        if request.planningMode == "Besatz":
             structured_answer = convert_to_json(*answers)
         else:
             structured_answer = answers

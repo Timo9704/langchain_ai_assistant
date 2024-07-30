@@ -3,6 +3,7 @@ import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from fastapi import FastAPI, HTTPException
+from langchain.chains.llm_math.base import LLMMathChain
 from langchain_community.vectorstores import Pinecone
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
@@ -23,14 +24,9 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('uvicorn.error')
 logger.setLevel(logging.INFO)
 
-# FastAPI config
-app = FastAPI()
-
 # LLM config
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
-# ReAct config
-react_prompt = hub.pull("hwchase17/react")
 
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
@@ -41,7 +37,8 @@ def planning_plants_controller(request: PlanningData):
     try:
         with ProcessPoolExecutor() as executor:
             futures = [
-                executor.submit(planning_background_plants, request)
+                executor.submit(planning_background_plants, request),
+                executor.submit(planning_plants_amount, request)
             ]
 
             answers = []
@@ -66,100 +63,42 @@ def convert_to_json(answer1):
     return structured_answer
 
 
-def planning_foreground_plants(request: PlanningData):
-    def tool_retriever_vectorstore():
-        embedding = OpenAIEmbeddings()
-        pinecone_index = Pinecone.from_existing_index("aiplannerplants", embedding=embedding)
-
-        def retrieve_knowledge(query: str):
-            results = pinecone_index.similarity_search(query, k=3)
-            return results
-
-        retriever_tool = Tool(
-            name="Knowledge retriever für Pflanzen",
-            func=retrieve_knowledge,
-            description="Ein Knowledge-Retriever, der Informationen zu Pflanzen liefert. "
-        )
-        return retriever_tool
+def planning_plants_amount(request: PlanningData):
+    llm_math_chain_tool = LLMMathChain.from_llm(llm)
 
     try:
         tools = [
-            tool_retriever_vectorstore(),
+            Tool(
+                name="Calculator",
+                func=llm_math_chain_tool.run,
+                description="Ein Taschenrechner, wenn du mathematische Berechnungen durchführen möchtest."
+            ),
         ]
 
         promptTemplate = PromptTemplate.from_template(
             template=f"""
-                Du bist ein Pflanzen-Planer für Aquarien. Deine Aufgabe ist es, geeignete Pflanzen für ein bestehendes Aquarium zu finden.
-                Deine Aufgabe ist es nun, geeignete Pflanzen für das Aquarium zu finden, die den Bedingungen entsprechen.
-                Dies sind Angaben zum bestehenden Aquarium: {request.aquariumInfo}
+                Du bist ein Pflanzen-Planer für Aquarien. Deine Aufgabe ist es die geeignete Menge Pflanzen für ein bestehendes Aquarium zu finden.
+                Angaben zum Aquarium: {request.aquariumInfo}
 
-                Wende folgendes Mapping an:
-                1. niedrig -> niedrig
-                2. mittel -> mittel + niedrig
-                3. hoch -> hoch + mittel + niedrig
-
-                1. **Auswahl geeigneter Pflanzen für das Aquarium**:
-                   - **Bedingungen**:
-                       - Limitiere die Anzahl der Pflanzen auf 3.
-                       
-                Die Antwort ist eine unterteilte Liste in Deutsch mit Name der Pflanze, Wachstumsgeschwindigkeit, Lichtbedarf und CO2-Bedarf der einzelnen Pflanzen.
-                Wenn du keine Pflanzen findest, schreibe 'Keine Pflanzen gefunden!'.
+                1. Berechne die Grundfläche des Aquariums.
+                
+                2. Berechne die Anzahl der Gesamtpflanzen für die Grundfläche des Aquariums.
+                - Eine Pflanze pro 150 cm² Grundfläche.
+                
+                3. Berechne die Anzahl für die Vordergrund-, Mittelgrund- und Hintergrundpflanzen.
+                - Vordergrund: 1/5 der Gesamtpflanzenanzahl
+                - Mittelgrund: 1/5 der Gesamtpflanzenanzahl
+                - Hintergrund: 2/5 der Gesamtpflanzenanzahl
+                
+                Die Antwort muss so aussehen: 'Vordergrundpflanzen: X Stück. Mittelgrundpflanzen: Y Stück. Hintergrundpflanzen: Z Stück.'
                 """,
         )
-
+        # ReAct config
+        react_prompt = hub.pull("hwchase17/react")
         react_agent = create_react_agent(llm, tools, react_prompt)
         agent_executor = AgentExecutor(agent=react_agent, tools=tools, handle_parsing_errors=True)
         answer = agent_executor.invoke({"input": promptTemplate})["output"]
-        return answer
-    except Exception as e:
-        logger.error(f"Error: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-def planning_midground_plants(request: PlanningData):
-    def tool_retriever_vectorstore():
-        embedding = OpenAIEmbeddings()
-        pinecone_index = Pinecone.from_existing_index("aiplannerplants", embedding=embedding)
-
-        def retrieve_knowledge(query: str):
-            results = pinecone_index.similarity_search(query, k=3)
-            return results
-
-        retriever_tool = Tool(
-            name="Knowledge retriever für Pflanzen",
-            func=retrieve_knowledge,
-            description="Ein Knowledge-Retriever, der Informationen zu Pflanzen liefert. "
-        )
-        return retriever_tool
-
-    try:
-        tools = [
-            tool_retriever_vectorstore(),
-        ]
-
-        promptTemplate = PromptTemplate.from_template(
-            template=f"""
-               Du bist ein Pflanzen-Planer für Aquarien. Deine Aufgabe ist es, geeignete Pflanzen für ein bestehendes Aquarium zu finden.
-                Deine Aufgabe ist es nun, geeignete Pflanzen für das Aquarium zu finden, die den Bedingungen entsprechen.
-                Dies sind Angaben zum bestehenden Aquarium: {request.aquariumInfo}
-
-                Wende folgendes Mapping an:
-                1. niedrig -> niedrig
-                2. mittel -> mittel + niedrig
-                3. hoch -> hoch + mittel + niedrig
-
-                1. **Auswahl geeigneter Pflanzen für das Aquarium**:
-                   - **Bedingungen**:
-                       - Limitiere die Anzahl der Pflanzen auf 3 Vordergrund-, 3 Mittelgrund- und 3 Hintergrundpflanzen.
-                       
-                Die Antwort ist eine unterteilte Liste in Deutsch mit Name der Pflanze, Wachstumsgeschwindigkeit, Lichtbedarf und CO2-Bedarf der einzelnen Pflanzen.
-                Wenn du keine Pflanzen findest, schreibe 'Keine Pflanzen gefunden!'.
-                """,
-        )
-
-        react_agent = create_react_agent(llm, tools, react_prompt)
-        agent_executor = AgentExecutor(agent=react_agent, tools=tools, handle_parsing_errors=True)
-        answer = agent_executor.invoke({"input": promptTemplate})["output"]
+        print(answer)
         return answer
     except Exception as e:
         logger.error(f"Error: {str(e)}")

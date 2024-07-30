@@ -33,38 +33,10 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('uvicorn.error')
 logger.setLevel(logging.INFO)
 
-# FastAPI config
-app = FastAPI()
-
 # LLM config
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
-llm_db = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
-
-# SQL config
-db_url = "sqlite:///app.db"
-db = SQLDatabase(create_engine(db_url))
-db_chain_tool = SQLDatabaseChain.from_llm(llm_db, db, return_direct=True)
-
-# Pinecone config
-embedding = OpenAIEmbeddings()
-pinecone_index = Pinecone.from_existing_index("aquabot", embedding=embedding)
-llm_math_chain_tool = LLMMathChain.from_llm(llm)
-
-# ReAct config
-react_prompt = hub.pull("hwchase17/react")
-
-
-def retrieve_knowledge(query: str):
-    results = pinecone_index.similarity_search(query, k=8)
-    return results
-
 
 search_aquarium = GoogleSearchAPIWrapper(google_cse_id=os.environ.get("GOOGLE_CSE_ID_AQUARIUM"))
-
-
-def top2_results_aquarium(query):
-    results = search_aquarium.run(query)
-    return results
 
 
 def results_tech(query):
@@ -83,7 +55,6 @@ async def planning_aquarium_controller(request: PlanningData):
 
     with ProcessPoolExecutor() as executor:
         futures = [
-            #executor.submit(planning_tech, request),
             executor.submit(planning_animals_controller, request),
             executor.submit(planning_plants_controller, request)
         ]
@@ -99,6 +70,7 @@ def convert_to_json(answer1, answer2, answer3):
     structured_llm = llm.with_structured_output(AquariumPlanningResult)
     structured_answer = structured_llm.invoke(str(answer1) + " " + str(answer2) + " " + str(answer3))
     return structured_answer
+
 
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
@@ -131,7 +103,7 @@ def planning_aquarium(request: PlanningData):
                 Das Aquarium {'muss ein' if request.isSet else 'darf auf keinen Fall ein'} Set mit Filter, Beleuchtung und Heizer sein.
                 Wenn mehrere passende Aquarien gefunden werden, wähle das größere aus.
                 
-                Deine Antwort ist das Aquarium mit allen vorhandenen Informationen auf Deutsch!'.
+                Deine Antwort ist eine Liste mit Name des Aquariums, alle Eigenschaften und Produkten auf Deutsch!'.
         """
 
         result = rag_chain.invoke(prompt)
@@ -147,11 +119,6 @@ def planning_tech(request: PlanningData):
     start_time = time.time()
     try:
         tools = [
-            Tool(
-                name="Calculator",
-                func=llm_math_chain_tool.run,
-                description="Ein Taschenrechner, wenn du mathematische Berechnungen durchführen möchtest."
-            ),
             Tool(
                 name="Google Suche für Links zu Technikproukten",
                 description="Eine Websuche, um Technik oder Sets zu suchen.",
@@ -182,7 +149,8 @@ def planning_tech(request: PlanningData):
                 Die Antwort ist eine unterteilte Liste in Deutsch.
                 """,
         )
-
+        # ReAct config
+        react_prompt = hub.pull("hwchase17/react")
         react_agent = create_react_agent(llm, tools, react_prompt)
         agent_executor = AgentExecutor(agent=react_agent, tools=tools, handle_parsing_errors=True, maxIterations=2)
         answer = agent_executor.invoke({"input": promptTemplate})["output"]
