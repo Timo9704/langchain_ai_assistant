@@ -73,26 +73,27 @@ def planning_fishes(request: PlanningData):
         )
 
         prompt = f"""
-            Du bist ein Planer für die Auswahl von Fischen, Garnelen und Schnecken für Aquarien. 
-                Deine Aufgabe ist es, geeignete Tiere für ein bestehendes Aquarium zu finden.
-                Infos zum Aquarium: {request.aquariumInfo}
-                Die Wasserwerte sind: {request.waterValues}
+            Als Aquarienplaner ist es deine Aufgabe, passende Fische, Garnelen und Schnecken für ein bestehendes Aquarium auszuwählen. 
+            Informationen zum Aquarium und zu den Wasserwerten werden bereitgestellt, um eine geeignete Auswahl zu treffen.
 
-                1. **Auswahl geeigneter Fische für das Aquarium und die gegebenen Wasserwerte**:
-                   - **Bedingungen**:
-                       - Die Fische müssen zu den gegebenen Wasserwerten passen.
-                       - Die Fische dürfen auf gar keinen Fall mehr Aquarium-Volumen beanspruchen, als das Aquarium bietet.
-                       - Der Aquarianer möchte diese Fische in seinem Aquarium haben. Liebingstiere sind: {request.favoriteFishList}, aber nur wenn sie zu den Wasserwerten passen und das Aquarium nicht zu klein ist.
-                       Wenn die Lieblingstiere nicht passen, dann begründe ausführlich warum sie nicht passen.
-                       
-                       - Begrenze die Anzahl der Fische auf 5.
-                       
-                Die Antwort ist eine unterteilte Liste in Deutsch mit Name des Fisches, Temperatur, pH-Wert, GH-Wert, KH-Wert und Beckengröße der einzelnen Fische.
-                Wenn du keine Fische findest, schreibe 'Keine Fische gefunden!'.
+            Aquarium-Details: {request.aquariumInfo}
+            Wasserwerte: {request.waterValues}
+
+            Aufgaben:
+            1. Wähle geeignete Fische basierend auf den gegebenen Wasserwerten und dem verfügbaren Aquariumvolumen.
+                - Bedingungen:
+                    - Die Fische müssen zu den Wasserwerten passen.
+                    - Die Fische dürfen das verfügbare Volumen des Aquariums nicht überschreiten.
+                    - Berücksichtige die Lieblingsfische des Aquarianers: {request.favoriteFishList}, sofern sie passend und platzgerecht sind.
+                    - Begrenze die Anzahl der Fische auf maximal 5.
+
+            Ergebnis:
+            Erstelle eine Liste mit den ausgewählten Fischen, inklusive Namen, Temperatur, pH-Wert, GH-Wert, KH-Wert und benötigter Beckengröße. 
+            Sollten keine passenden Fische gefunden werden, gib 'Keine Fische gefunden!' zurück.
         """
 
         result = rag_chain.invoke(prompt)
         return result
     except Exception as e:
-        logger.error(f"Error: {str(e)}")
+        logger.error(f"Error Planning Fishes: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

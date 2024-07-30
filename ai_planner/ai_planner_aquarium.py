@@ -45,10 +45,11 @@ async def planning_aquarium_controller(request: PlanningData):
     request.aquariumInfo = answer1
     answers.append(answer1)
     end_time = time.time()
-    logger.error(f"Planning Aquarium took {end_time - start_time} seconds")
+    logger.info(f"Planning Aquarium took {end_time - start_time} seconds")
 
     with ProcessPoolExecutor() as executor:
         futures = [
+            executor.submit(planning_tech, request),
             executor.submit(planning_animals_controller, request),
             executor.submit(planning_plants_controller, request)
         ]
@@ -60,9 +61,9 @@ async def planning_aquarium_controller(request: PlanningData):
     return structured_answer
 
 
-def convert_to_json(answer1, answer2, answer3):
+def convert_to_json(answer1, answer2, answer3, answer4):
     structured_llm = llm.with_structured_output(AquariumPlanningResult)
-    structured_answer = structured_llm.invoke(str(answer1) + " " + str(answer2) + " " + str(answer3))
+    structured_answer = structured_llm.invoke(str(answer1) + " " + str(answer2) + " " + str(answer3) + str(answer4))
     return structured_answer
 
 
@@ -102,7 +103,7 @@ def planning_aquarium(request: PlanningData):
         return result
 
     except Exception as e:
-        logger.error(f"Error: {str(e)}")
+        logger.error(f"Error Planning Aquarium: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -119,26 +120,20 @@ def planning_tech(request: PlanningData):
 
         promptTemplate = PromptTemplate.from_template(
             template=f"""
-                Du bist ein Planer für die Auswahl der optimalen Technik für ein Aquariums. 
-                Deine Aufgabe ist es vorher zu prüfen, ob das Aquarium ein Set-Aquarium ist oder nicht.
-                
-                Dies sind Angaben zum bestehenden Aquarium: {request.aquariumInfo}
-                
-                1. **Prüfe ob das Aquarium ein Set-Aquarium ist**:
-                    - Suche in der Google Suche nach dem Namen des Aquariums.
-                      Es ist ein Set-Aquarium, wenn Hinweise gibt, dass ein Filter, Heizer und Beleuchtung dabei sind.
-                      Wenn es ein Set-Aquarium ist, dann schreibe für jedes Produkt, welches im Set enthalten ist: 'im Set enthalten', aber schreibe auch den Modellnamen auf. Überspringe den zweiten Schritt.
-                      Wenn es kein Set-Aquarium ist, dann gehe zum zweiten Schritt.
-                  
-                2. **Auswahl geeigneter Technik für das Aquarium**:
-                    - **Bedingungen**:
-                        - das Aquarium ist kein Set-Aquarium
-                        - Suche in der Google Suche nach einem Filter auf Aquariumfilter in Kombination mit der Literanzahl des Aquariums.
-                        - Suche in der Google Suche nach einem Heizer auf Aquariumheizer in Kombination mit der Literanzahl des Aquariums.
-                        - Suche in der Google Suche nach einer Beleuchtung auf Aquariumbeleuchtung in Kombination mit der Literanzahl des Aquariums.
-                    
-                Die Antwort ist eine unterteilte Liste in Deutsch.
-                """,
+                Als Planer für Aquarien-Technik prüfst du zunächst, ob es sich bei dem gegebenen Aquarium um ein Set-Aquarium handelt, das bereits mit den notwendigen technischen Komponenten ausgestattet ist.
+
+                Aquarium-Details: {request.aquariumInfo}
+
+                Aufgabe:
+                - Ist das Aquarium ein Set-Aquarium mit bereits integriertem Filter, Heizer und Beleuchtung? Falls ja, sind keine weiteren Technikprodukte erforderlich.
+                - Ist das Aquarium ein Basis-Aquarium ohne technische Ausstattung, führe die folgenden Schritte durch:
+                    - Filter: Suche nach einem geeigneten Filter, der der Literanzahl des Aquariums entspricht.
+                    - Heizer: Suche nach einem Heizer, der zur Literanzahl des Aquariums passt.
+                    - Beleuchtung: Suche nach einer Beleuchtung, die der Länge des Aquariums gerecht wird.
+
+                Ergebnis:
+                Erstelle eine Liste mit den empfohlenen Produkten für Filter, Heizer und Beleuchtung, falls notwendig. Die Informationen sollten in deutscher Sprache aufgelistet werden.
+            """
         )
         # ReAct config
         react_prompt = hub.pull("hwchase17/react")
@@ -146,8 +141,8 @@ def planning_tech(request: PlanningData):
         agent_executor = AgentExecutor(agent=react_agent, tools=tools, handle_parsing_errors=True, maxIterations=2)
         answer = agent_executor.invoke({"input": promptTemplate})["output"]
         end_time = time.time()
-        logger.error(f"Planning Technik took {end_time - start_time} seconds")
+        logger.info(f"Planning Technik took {end_time - start_time} seconds")
         return answer
     except Exception as e:
-        logger.error(f"Error: {str(e)}")
+        logger.error(f"Error Planning Technic: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

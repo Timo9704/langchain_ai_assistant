@@ -118,26 +118,27 @@ def planning_background_plants(request: PlanningData):
                 | StrOutputParser()
         )
 
-        # Definieren des Prompts, um mit dem RAG Chain zu interagieren
         prompt = f"""
-            Du bist ein Pflanzen-Planer für Aquarien. Deine Aufgabe ist es, geeignete Pflanzen für ein bestehendes Aquarium zu finden.
-            Dies sind Angaben zum bestehenden Aquarium: {request.aquariumInfo}
+            Du bist als Pflanzen-Planer für Aquarien tätig. Deine Aufgabe besteht darin, passende Pflanzen für ein spezifisches Aquarium zu finden, basierend auf den angegebenen Bedingungen.
 
-            Nutze das folgende Mapping für den Lichtbedarf:
-            1. niedriger Beleuchtungsstärke -> nur Pflanzen für niedrigen Lichtbedarf
-            2. mittlerer Beleuchtungsstärke -> Pflanzen für niedrigen und mittleren Lichtbedarf
-            3. hoher Beleuchtungsstärke -> Pflanzen für niedrigen, mittleren und hohen Lichtbedarf
-            
-            Nutze das folgende Mapping für die Wuchshöhen:
-            1. 0-5cm -> Vordergrundpflanzen
-            2. 5-15cm -> Mittelgrundpflanzen
-            3. 15-30cm -> Hintergrundpflanzen
-            
-            Es {'sollen viele' if request.useForegroundPlants else 'weniger'} sehr kleine Vordergrundpflanzen ausgesucht werden.
-            Es {'sollen auch' if request.useMossPlants else 'dürfen keine'} Moose ausgesucht werden.
-            Die Pflanzen soll eine Wachstumgeschwindigkeit von mindestens {request.growthRate} haben.
-            
-            Die Auswahl sollte mehr als jeweils ein Pflanze für den Vordergrund, Mittelgrund und Hintergrund umfassen. Berücksichtige die Wachstumsgeschwindigkeit, den Lichtbedarf und den CO2-Bedarf jeder Pflanze.
+            Aquarium-Details: {request.aquariumInfo}
+
+            Anleitung zur Auswahl basierend auf Lichtbedarf:
+            - Niedrige Beleuchtungsstärke: Wähle ausschließlich Pflanzen für niedrigen Lichtbedarf.
+            - Mittlere Beleuchtungsstärke: Wähle Pflanzen für niedrigen und mittleren Lichtbedarf.
+            - Hohe Beleuchtungsstärke: Wähle Pflanzen für alle Lichtbedarfsstufen (niedrig, mittel, hoch).
+
+            Anleitung zur Auswahl nach Wuchshöhen:
+            - 0-5 cm: Wähle Vordergrundpflanzen.
+            - 5-15 cm: Wähle Mittelgrundpflanzen.
+            - 15-30 cm: Wähle Hintergrundpflanzen.
+
+            Zusätzliche Auswahlkriterien:
+            - {'Bevorzuge eine große Anzahl an sehr kleinen Vordergrundpflanzen.' if request.useForegroundPlants else 'Wähle weniger sehr kleine Vordergrundpflanzen.'}
+            - {'Moospflanzen sollen in die Auswahl einbezogen werden.' if request.useMossPlants else 'Moospflanzen dürfen nicht ausgewählt werden.'}
+            - Mindestwachstumsgeschwindigkeit: {request.growthRate}.
+
+            Die Auswahl sollte mindestens eine Pflanze für den Vorder-, Mittel- und Hintergrund umfassen und dabei Wachstumsgeschwindigkeit, Lichtbedarf und CO2-Bedarf jeder Pflanze berücksichtigen.
         """
 
         # Ausführen des RAG Chains
