@@ -2,14 +2,14 @@ from pydantic import BaseModel
 
 
 class RequestBody(BaseModel):
-    planningMode: str
-    availableSpace: int
-    maxVolume: int
-    needCabinet: bool
-    maxCost: int
-    favoritAnimals: bool
-    favoriteFishList: str
-    waterValues: str
-    useForegroundPlants: bool
-    plantingIntensity: str
-    maintenanceEffort: str
+    aquariumInfo: str
+    waterClear: bool
+    waterTurbidity: str
+    aquariumProblemDescription: str
+    fishHealthProblem: bool
+    fishDiverseFeed: bool
+    fishProblemDescription: str
+    plantGrowthProblem: bool
+    plantDeficiencySymptom: bool
+    plantDeficiencySymptomDescription: str
+    plantProblemDescription: str
