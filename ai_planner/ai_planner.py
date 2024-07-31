@@ -23,9 +23,9 @@ async def chat(request: PlanningData):
         if request.planningMode == "Aquarium":
             return await planning_aquarium_controller(request)
         elif request.planningMode == "Besatz":
-            return await planning_animals_controller(request)
+            return planning_animals_controller(request)
         elif request.planningMode == "Pflanzen":
-            return await planning_plants_controller(request)
+            return planning_plants_controller(request)
     except Exception as e:
         logger.error(f"Error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

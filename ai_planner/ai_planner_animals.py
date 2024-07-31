@@ -1,19 +1,15 @@
 import logging
-from multiprocessing import Pool
+import time
 
-from fastapi import FastAPI, HTTPException
-from langchain_openai import ChatOpenAI
+from fastapi import HTTPException
+from langchain_community.vectorstores import Pinecone
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnablePassthrough
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from dotenv import load_dotenv
 from langchain import hub
-from langchain.agents import AgentExecutor, create_react_agent
-from langchain.chains.llm_math.base import LLMMathChain
-from langchain_core.tools import Tool
-from langchain_core.prompts import PromptTemplate
 
-from langchain_experimental.sql import SQLDatabaseChain
-from langchain_community.utilities import SQLDatabase
-from sqlalchemy import create_engine
-
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from model.output_model import FishesPlanningResult
 from model.input_model import PlanningData
 
@@ -24,36 +20,32 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('uvicorn.error')
 logger.setLevel(logging.INFO)
 
-# FastAPI config
-app = FastAPI()
-
 # LLM config
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
-llm_db = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
-
-# SQL config
-db_url = "sqlite:///app.db"
-db = SQLDatabase(create_engine(db_url))
-db_chain_tool = SQLDatabaseChain.from_llm(llm_db, db, return_direct=True)
-
-llm_math_chain_tool = LLMMathChain.from_llm(llm)
-
-# ReAct config
-react_prompt = hub.pull("hwchase17/react")
 
 
 def planning_animals_controller(request: PlanningData):
-    pool = Pool()
-    result1 = pool.apply_async(planning_fishes, [request])
-    answer1 = result1.get()
-    pool.close()
+    start_time = time.time()
+    try:
+        with ProcessPoolExecutor() as executor:
+            futures = [
+                executor.submit(planning_fishes, request),
+            ]
 
-    if request.planningMode == "Besatz":
-        structured_answer = convert_to_json(answer1)
-    else:
-        structured_answer = answer1
+            answers = []
+            for future in as_completed(futures):
+                answers.append(future.result())
 
-    return structured_answer
+        if request.planningMode == "Besatz":
+            structured_answer = convert_to_json(*answers)
+        else:
+            structured_answer = answers
+        end_time = time.time()
+        logger.info(f"Planning planning_animals_controller finished in {end_time - start_time} seconds")
+        return structured_answer
+    except Exception as e:
+        logger.error(f"Error: {str(e)}")
+        return ""
 
 
 def convert_to_json(answer1):
@@ -62,43 +54,46 @@ def convert_to_json(answer1):
     return structured_answer
 
 
+def format_docs(docs):
+    return "\n\n".join(doc.page_content for doc in docs)
+
+
 def planning_fishes(request: PlanningData):
     try:
-        tools = [
-            Tool(
-                name="SQL Database App-DB",
-                func=db_chain_tool.run,
-                description="Eine SQL-Datenbank App-DB, wenn du nach Fischen in der Datenbank suchen sollst."
-            ),
-            Tool(
-                name="Calculator",
-                func=llm_math_chain_tool.run,
-                description="Ein Taschenrechner, wenn du mathematische Berechnungen durchführen möchtest."
-            )
-        ]
+        vectorstore = Pinecone.from_existing_index("aiplannerfishes", embedding=OpenAIEmbeddings())
+        retriever = vectorstore.as_retriever(search_kwargs={"k": 10})
 
-        promptTemplate = PromptTemplate.from_template(
-            template=f"""
-                Du bist ein Planer für die Auswahl von Fischen, Garnelen und Schnecken für Aquarien. 
-                Deine Aufgabe ist es, geeignete Tiere für ein bestehendes Aquarium zu finden.
-                Dies sind Angaben zum bestehenden Aquarium: {request.aquariumInfo}
+        prompt = hub.pull("rlm/rag-prompt")
 
-                1. **Auswahl geeigneter Fische für das Aquarium**:
-                   - **Datenbankabfrage**: Suche in der Tabelle 'fish' der App-DB.
-                   - **Bedingungen**:
-                       - pH: der gegebene Wert liegt zwischen min_pH und  max_pH
-                       - GH: der gegebene Wert liegt zwischen min_GH und  max_GH
-                       - KH: der gegebene Wert liegt zwischen min_KH und  max_KH
-                       - liters: der gegebene Wert liegt zwischen min_liters und max_liters.
-                       - Limitiere die Anzahl der Fische auf 5.
-                Die Antwort ist eine unterteilte Liste in Deutsch. Wenn du keine Fische findest, schreibe 'Keine Fische gefunden!'.
-                """,
+        rag_chain = (
+                {"context": retriever | format_docs, "question": RunnablePassthrough()}
+                | prompt
+                | llm
+                | StrOutputParser()
         )
 
-        react_agent = create_react_agent(llm, tools, react_prompt)
-        agent_executor = AgentExecutor(agent=react_agent, tools=tools, handle_parsing_errors=True, maxIterations=2)
-        answer = agent_executor.invoke({"input": promptTemplate})["output"]
-        return answer
+        prompt = f"""
+            Als Aquarienplaner ist es deine Aufgabe, passende Fische, Garnelen und Schnecken für ein bestehendes Aquarium auszuwählen. 
+            Informationen zum Aquarium und zu den Wasserwerten werden bereitgestellt, um eine geeignete Auswahl zu treffen.
+
+            Aquarium-Details: {request.aquariumInfo}
+            Wasserwerte: {request.waterValues}
+
+            Aufgaben:
+            1. Wähle geeignete Fische basierend auf den gegebenen Wasserwerten und dem verfügbaren Aquariumvolumen.
+                - Bedingungen:
+                    - Die Fische müssen zu den Wasserwerten passen.
+                    - Die Fische dürfen das verfügbare Volumen des Aquariums nicht überschreiten.
+                    - Berücksichtige die Lieblingsfische des Aquarianers: {request.favoriteFishList}, sofern sie passend und platzgerecht sind.
+                    - Begrenze die Anzahl der Fische auf maximal 5.
+
+            Ergebnis:
+            Erstelle eine Liste mit den ausgewählten Fischen, inklusive Namen, Temperatur, pH-Wert, GH-Wert, KH-Wert und benötigter Beckengröße. 
+            Sollten keine passenden Fische gefunden werden, gib 'Keine Fische gefunden!' zurück.
+        """
+
+        result = rag_chain.invoke(prompt)
+        return result
     except Exception as e:
-        logger.error(f"Error: {str(e)}")
+        logger.error(f"Error Planning Fishes: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
