@@ -108,7 +108,7 @@ def optimize_fish(request: RequestBody):
             Aquarium-Details: {request.aquariumInfo} {request.latest10Measurements}
             Problembeschreibung des Aquarianers: 
             {request.fishProblemDescription}
-            {'Die Fische scheinen einen Krankheit zu haben.' if request.fishHealthProblem else 'Die Fische scheinen gesund zu sein.'}
+            {'Die Fische scheinen gesund zu sein.' if request.fishHealthProblem else 'Die Fische scheinen einen Krankheit zu haben.'}
             {'Es werden verschiedene Futtersorten eingesetzt.' if request.fishDiverseFeed else 'Es wird nur eine Futtersorte eingesetzt.'}
             
             

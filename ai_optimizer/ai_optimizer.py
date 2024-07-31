@@ -27,7 +27,8 @@ llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
 def convert_to_json(answer1, answer2, answer3):
     structured_llm = llm.with_structured_output(Aquarium)
-    prompt = '''Hier ist das Ergebnis der Aquariumsoptimierung. Führe die Ergebnisse zusammen und erläutere die Lösungsvorschläge ausführlich. '''
+    prompt = '''Hier ist das Ergebnis der Aquariumsoptimierung. Führe die Ergebnisse zusammen und erläutere die 
+    Lösungsvorschläge ausführlich.'''
     structured_answer = structured_llm.invoke(prompt + str(answer1) + " " + str(answer2) + " " + str(answer3))
     return structured_answer
 

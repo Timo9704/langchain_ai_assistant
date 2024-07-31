@@ -5,13 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7d024c9d-6268-4a07-8354-c1f4873099c5" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/ai_optimizer/ai_optimizer_aquarium.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ai_optimizer/ai_optimizer_fish.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ai_optimizer/ai_optimizer_plants.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ai_optimizer/ai_optimizer.py" beforeDir="false" afterPath="$PROJECT_DIR$/ai_optimizer/ai_optimizer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ai_optimizer/model/input_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/ai_optimizer/model/input_model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ai_optimizer/model/output_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/ai_optimizer/model/output_model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ai_optimizer/ai_optimizer_fish.py" beforeDir="false" afterPath="$PROJECT_DIR$/ai_optimizer/ai_optimizer_fish.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ai_optimizer/ai_optimizer_plants.py" beforeDir="false" afterPath="$PROJECT_DIR$/ai_optimizer/ai_optimizer_plants.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

@@ -108,7 +108,7 @@ def optimize_plants(request: RequestBody):
             Aquarium-Details: {request.aquariumInfo} {request.aquariumTechInfo} {request.latest10Measurements}
             Problembeschreibung des Aquarianers: 
             {request.plantProblemDescription}
-            {'Die Pflanzen wachsen gut.' if request.plantGrowthProblem else 'Die Pflanzen im Aquarium wachsen nicht gut.'}
+            {'Die Pflanzen im Aquarium wachsen nicht gut.' if request.plantGrowthProblem else 'Die Pflanzen wachsen gut.'}
             {'Die Pflanzen zeigen keinen Mangel an!.' if request.plantDeficiencySymptom else 'Die Pflanzen zeigen die folgenden Mangelerscheinungen:' + request.plantDeficiencySymptomDescription}
             
             1. Ermittle Probleme:
