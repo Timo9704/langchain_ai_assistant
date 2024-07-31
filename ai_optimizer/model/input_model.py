@@ -3,6 +3,9 @@ from pydantic import BaseModel
 
 class RequestBody(BaseModel):
     aquariumInfo: str
+    aquariumTechInfo: str
+    latest10Measurements: str
+    allActivities: str
     waterClear: bool
     waterTurbidity: str
     aquariumProblemDescription: str
