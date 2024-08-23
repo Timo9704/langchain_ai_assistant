@@ -52,7 +52,7 @@ def tool_retriever_vectorstore_plants():
     retriever_tool = Tool(
         name="Wissensdatenbank für Pflanzen",
         func=retrieve_knowledge,
-        description="Eine Wissensdatenbank, die Informationen zu einer spezifischen Pflanze, wie Namen, Lichtbedarf oder CO2-Bedarf liefert."
+        description="Eine Wissensdatenbank für Informationen zu spezifischen Pflanze, wie Namen, Lichtbedarf oder CO2-Bedarf."
     )
     return retriever_tool
 
@@ -67,23 +67,23 @@ def optimize_plants(request: RequestBody):
 
         promptTemplate = PromptTemplate.from_template(
             template=f"""
-            Du bist ein Aquarium-Experte und analysierst für Aquarianer deren Aquarien, um ihnen zu helfen, optimale Bedingungen zu schaffen. 
-            Gehe Schritt für Schritt vor und nutze alle verfügbaren Informationen, um eine umfassende Beratung zu bieten.
+            Du bist ein Experte für Pflanzen in Aquarien und hilfst Aquarianern bei Problemen mit ihren Aquarienpflanzen.
+            Gehe Schritt für Schritt vor und nutze alle verfügbaren Informationen.
 
-            Aquarium-Details: {request.aquariumInfo} {request.aquariumTechInfo} {request.latest3Measurements}
-            Problembeschreibung des Aquarianers: 
-            {request.plantProblemDescription}
+            Aquarium-Details: {request.aquariumInfo} {request.aquariumTechInfo} 
+            Die Messwerte der letzten drei Messungen: {request.latest3Measurements}
+            Problembeschreibung des Aquarianers: {request.plantProblemDescription}
             {'Die Pflanzen im Aquarium wachsen nicht gut.' if request.plantGrowthProblem else 'Die Pflanzen wachsen gut.'}
             {'Die Pflanzen zeigen keinen Mangel an!.' if request.plantDeficiencySymptom else 'Die Pflanzen zeigen die folgenden Mangelerscheinungen:' + request.plantDeficiencySymptomDescription}
             
             1. Ermittle Probleme in Bezug auf die Pflanzen:
-            - Sind der pH-Wert, GH-Wert, KH-Wert, CO2-Gehalt, Licht oder die Nährstoffe problematisch?
-            - Worauf könnten die Mangelsymptome hindeuten?
+            - Wasserwerte: Fehlt den Wasserwerten vor allem bei Nitrat, Phosphat, Kalium oder Eisen etwas?
+            - Mangelerscheinungen: Worauf könnten die Mangelsymptome hindeuten?
             Beachte, dass nicht alle Informationen relevant sein müssen.
             
-            2. Erarbeite Lösungsvorschläge für jedes erkannte Problem.
+            2. Gebe einen Lösungsvorschlag für jedes erkannte Problem.
 
-            Falls kein Problem vorliegt, sollte klar "Keine Probleme gefunden!" stehen.
+            Falls kein Problem vorliegt, gebe zurück "Keine Probleme gefunden!".
             """,
         )
 

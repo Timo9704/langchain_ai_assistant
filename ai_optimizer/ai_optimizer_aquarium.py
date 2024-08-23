@@ -71,7 +71,7 @@ def tool_retriever_vectorstore_plants():
     retriever_tool = Tool(
         name="Wissensdatenbank für Pflanzen",
         func=retrieve_knowledge,
-        description="Eine Wissensdatenbank, die Informationen zu einer spezifischen Pflanze, wie Namen, Lichtbedarf oder CO2-Bedarf liefert."
+        description="Eine Wissensdatenbank für Informationen zu spezifischen Pflanze, wie Namen, Lichtbedarf oder CO2-Bedarf."
     )
     return retriever_tool
 
@@ -91,8 +91,8 @@ def tool_google_search_aquarium():
     search = GoogleSearchAPIWrapper(google_cse_id=os.environ.get("GOOGLE_CSE_ID_ALL"))
 
     google_search_tool = Tool(
-        name="Eine Google Websuche, falls du sehr spezifische Fragen hast und keine gute Antwort aus anderen Tools bekommen hast.",
-        description="Eine Websuche.",
+        name="Eine Google Websuche",
+        description="Eine Websuche, falls du sehr spezifische Fragen hast und keine gute Antwort aus anderen Tools bekommen hast.",
         func=search.run
     )
     return google_search_tool
@@ -105,6 +105,7 @@ def optimize_aquarium(request: RequestBody):
             tool_retriever_vectorstore_general(),
             tool_retriever_vectorstore_fishes(),
             tool_retriever_vectorstore_plants(),
+            tool_google_search_aquarium()
         ]
 
         promptTemplate = PromptTemplate.from_template(
@@ -118,14 +119,14 @@ def optimize_aquarium(request: RequestBody):
             {'Das Wasser hat keine Trübung oder Verfärbung.' if request.waterClear else 'Das Wasser ist' + request.waterTurbidity}
             
             1. Ermittle Probleme:
-            - Erkenne zuerst die Probleme aus der Beschreibung des Aquarianers bezogen auf das Aquarium oder die Technik.
-            - Hat der Filter ausreichend Durchfluss?
-            - Ist der Heizer für die Beckengröße geeignet?
-            Beachte, dass nicht alle Informationen relevant sein müssen.
+            - Allgemeine Probleme: Bezogen auf die Beschreibung des Aquariums oder der Technik.
+            - Filterleistung: Hat der Filter ausreichend Durchfluss? Wird er regelmäßig gereinigt?
+            - Heizer: Ist der Heizer für die Beckengröße geeignet?
+            - Beleuchtung: Ist die Beleuchtung ausreichend?
             
-            2. Erarbeite Lösungsvorschläge für jedes erkannte Problem.
+            2. Gebe einen Lösungsvorschlag für jedes erkannte Problem.
 
-            Falls kein Problem vorliegt, sollte klar "Keine Probleme gefunden!" stehen.
+            Falls kein Problem vorliegt, gebe zurück "Keine Probleme gefunden!".
             """,
         )
 

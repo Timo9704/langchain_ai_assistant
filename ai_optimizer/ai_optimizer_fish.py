@@ -89,14 +89,14 @@ def optimize_fish(request: RequestBody):
             
             
             1. Ermittle Probleme in Bezug auf die Fische:
-            - Wird zu einseitig gefüttert?
-            - Welche Wasserwerte sind auffällig für Fische?
-            - Wenn Fische angegeben sind, passen sie zu den Wasserwerten?
+            - Fütterung: Wird zu einseitig gefüttert?
+            - Wasserwerte: Welche Wasserwerte sind auffällig für Fische?
+            - Fische: Wenn Fische angegeben sind, passen sie zu den Wasserwerten?
             Beachte, dass nicht alle Informationen relevant sein müssen.
             
-            2. Erarbeite Lösungsvorschläge für jedes erkannte Problem.
+            2. Gebe einen Lösungsvorschlag für jedes erkannte Problem.
 
-            Falls kein Problem vorliegt, sollte klar "Keine Probleme gefunden!" stehen.
+            Falls kein Problem vorliegt, gebe zurück "Keine Probleme gefunden!".
             """,
         )
 
