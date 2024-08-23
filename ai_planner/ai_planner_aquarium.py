@@ -1,20 +1,18 @@
+import json
 import logging
 import os
 import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
-
 from fastapi import HTTPException
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnablePassthrough
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_community.vectorstores import Pinecone
 from langchain_google_community import GoogleSearchAPIWrapper
 from dotenv import load_dotenv
 from langchain import hub
 from langchain.agents import AgentExecutor, create_react_agent
-from langchain_core.tools import Tool
+from langchain_core.tools import Tool, tool
 from langchain_core.prompts import PromptTemplate
-
+from pydantic import BaseModel, Field
 from ai_planner_animals import planning_animals_controller
 from ai_planner_plants import planning_plants_controller
 from model.output_model import AquariumPlanningResult
@@ -71,39 +69,61 @@ def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 
 
+def tool_retriever_vectorstore_aquarium():
+    embedding = OpenAIEmbeddings()
+    pinecone_index = Pinecone.from_existing_index("aiplanneraquarium", embedding=embedding)
+
+    def retrieve_knowledge(query: str):
+        results = pinecone_index.similarity_search(query, k=8)
+        return results
+
+    retriever_tool = Tool(
+        name="Wissensdatenbank für Aquaristik und Aquascaping",
+        func=retrieve_knowledge,
+        description="Eine Wissensdatenbank, die Informationen zu Aquarien, Technik, Fischen und Pflanzen liefert. "
+                    "Dort gibt es auch Tipps und Tricks bei Problemen oder Fragen. Es darf jedoch nicht zu allgemein sein, sondern muss ein spezifisches Thema behandeln."
+    )
+    return retriever_tool
+
+
+class SearchInput(BaseModel):
+    json: str = Field(description="Länge des Aquariums ohne Einheit")
+
+
 def planning_aquarium(request: PlanningData):
     try:
-        vectorstore = Pinecone.from_existing_index("aiplanneraquarium", embedding=OpenAIEmbeddings())
-        retriever = vectorstore.as_retriever(search_kwargs={"k": 16})
+        start_time = time.time()
 
-        prompt = hub.pull("rlm/rag-prompt")
+        tools = [
+            tool_retriever_vectorstore_aquarium(),
+        ]
 
-        rag_chain = (
-                {"context": retriever | format_docs, "question": RunnablePassthrough()}
-                | prompt
-                | llm
-                | StrOutputParser()
-        )
-
-        prompt = f"""
+        promptTemplate = PromptTemplate.from_template(f"""
             Du bist ein Planer für die Auswahl eines optimalen Aquariums für einen Kunden. 
-                Deine Aufgabe ist es, ein geeignete Aquarien auf Basis von Anforderungen auszuwählen.
+                Deine Aufgabe ist es, ein geeignetes Aquarium auf Basis von Anforderungen auszuwählen.
                 
-                Dies sind die Anforderungen des Kunden:
-                Das Aquarium muss weniger als {request.availableSpace} cm lang sein.
-                Das Aquarium muss zwischen {request.minVolume} als {request.maxVolume} Liter fassen.
-                Das Aquarium muss weniger als {request.maxCost} Euro kosten.
-                Das Aquarium muss {'mit' if request.needCabinet else 'ohne'} Unterschrank sein.
-                Das Aquarium {'muss ein' if request.isSet else 'darf auf keinen Fall ein'} Set mit Filter, Beleuchtung und Heizer sein.
-                
-                Deine Antwort ist eine Liste mit Name des Aquariums, alle Eigenschaften und Produkten auf Deutsch!'.
-        """
+                Suche ein Aquarium auf Basis der folgenden Anforderungen:
+                Länge: maximal {request.availableSpace} cm.
+                Volumen: zwischen {request.minVolume} bis {request.maxVolume} Liter.
+                Preis: maximal {request.maxCost} Euro.
+                Unterschrank: {'ja' if request.needCabinet else 'nein'}.
+                als Set: {'ja' if request.isSet else 'nein'}.
+                                   
+                Deine Antwort ist eine ausführliche Liste mit allen Daten des Aquarium, wie z.B. 
+                Name des Aquariums, alle Eigenschaften und Produkten auf Deutsch für das Aquarium!'.
+        """),
 
-        result = rag_chain.invoke(prompt)
-        return result
-
+        # ReAct config
+        react_prompt = hub.pull("hwchase17/react")
+        react_agent = create_react_agent(llm, tools, react_prompt)
+        agent_executor = AgentExecutor(agent=react_agent, tools=tools, handle_parsing_errors=True)
+        answer = agent_executor.invoke({"input": promptTemplate})["output"]
+        end_time = time.time()
+        logger.info(answer)
+        logger.info(f"Planning Aquarium finished in {end_time - start_time} seconds")
+        return answer
     except Exception as e:
-        logger.error(f"Error Planning Aquarium: {str(e)}")
+        logger.error(f"Error Aquarium Planning: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
