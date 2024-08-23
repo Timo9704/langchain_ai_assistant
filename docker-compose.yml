@@ -1,5 +1,4 @@
 version: '3.8'
-
 services:
   ai_assistent:
     build:
@@ -7,18 +6,12 @@ services:
       dockerfile: ai_assistant/Dockerfile
     ports:
       - "8000:8000"
-    deploy:
-      mode: replicated
-      replicas: 1
   ai_planner:
     build:
       context: .
       dockerfile: ai_planner/Dockerfile
     ports:
       - "8001:8001"
-    deploy:
-      mode: replicated
-      replicas: 1
   ai_optimizer:
     build:
       context: .
