@@ -87,17 +87,6 @@ def tool_math_calculator():
     return calculator_tool
 
 
-def tool_google_search_aquarium():
-    search = GoogleSearchAPIWrapper(google_cse_id=os.environ.get("GOOGLE_CSE_ID_ALL"))
-
-    google_search_tool = Tool(
-        name="Eine Google Websuche",
-        description="Eine Websuche, falls du sehr spezifische Fragen hast und keine gute Antwort aus anderen Tools bekommen hast.",
-        func=search.run
-    )
-    return google_search_tool
-
-
 def optimize_aquarium(request: RequestBody):
     time_start = time.time()
     try:
@@ -105,7 +94,6 @@ def optimize_aquarium(request: RequestBody):
             tool_retriever_vectorstore_general(),
             tool_retriever_vectorstore_fishes(),
             tool_retriever_vectorstore_plants(),
-            tool_google_search_aquarium()
         ]
 
         promptTemplate = PromptTemplate.from_template(
