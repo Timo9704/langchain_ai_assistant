@@ -1,9 +1,8 @@
 import logging
 import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
-
+import json
 from fastapi import HTTPException
-from langchain.chains.llm_math.base import LLMMathChain
 from langchain_community.vectorstores import Pinecone
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
@@ -11,8 +10,9 @@ from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from dotenv import load_dotenv
 from langchain import hub
 from langchain.agents import AgentExecutor, create_react_agent
-from langchain_core.tools import Tool
+from langchain_core.tools import tool
 from langchain_core.prompts import PromptTemplate
+from pydantic import BaseModel, Field
 
 from model.output_model import PlantsPlanningResultWrapper
 from model.input_model import PlanningData
@@ -37,7 +37,7 @@ def planning_plants_controller(request: PlanningData):
     try:
         with ProcessPoolExecutor() as executor:
             futures = [
-                executor.submit(planning_background_plants, request),
+                executor.submit(planning_plants, request),
                 executor.submit(planning_plants_amount, request)
             ]
 
@@ -63,16 +63,48 @@ def convert_to_json(answer1, answer2):
     return structured_answer
 
 
+class SearchInput(BaseModel):
+    json: str = Field(description="Länge des Aquariums ohne Einheit")
+
+
 def planning_plants_amount(request: PlanningData):
-    llm_math_chain_tool = LLMMathChain.from_llm(llm)
+    start_time = time.time()
+    @tool("search-tool", args_schema=SearchInput, return_direct=True)
+    def calculate_plants_amount(json_string: str):
+        """
+            Berechnet die Anzahl der benötigten Pflanzen basierend auf der Flächengröße und Prozentsätzen für Vorder-, Mittel- und Hintergrund.
+            Diese Methode gibt die Anzahl der Pflanzen für jeden Bereich als formatierten String zurück.
+            Die Eingabe erfolgt als JSON-Objekt mit den folgenden Feldern:
+            - length: Länge des Aquariums ohne Einheit
+            - width: Breite des Aquariums ohne Einheit
+            - foreground_percentage: Prozentuale Anteil der Vordergrundpflanzen
+            - middle_percentage: Prozentuale Anteil der Mittelgrundpflanzen
+            - background_percentage: Prozentuale Anteil der Hintergrundpflanzen
+            """
+
+        # Umwandeln des JSON-Strings in ein Python-Dictionary
+        data = json.loads(json_string)
+
+        # Zugriff auf die einzelnen Werte
+        length = data['length']
+        width = data['width']
+        foreground_percentage = data['foreground_percentage']
+        middle_percentage = data['middle_percentage']
+        background_percentage = data['background_percentage']
+
+        # Berechnung der Fläche des Aquariums
+        area = length * width
+
+        # Berechnung der Anzahl der Pflanzen für jeden Bereich
+        foreground_plants = (area * (foreground_percentage / 100)) / 130
+        middle_plants = (area * (middle_percentage / 100)) / 130
+        background_plants = (area * (background_percentage / 100)) / 130
+
+        return f"Vordergrundpflanzen: {foreground_plants:.0f} Stück. Mittelgrundpflanzen: {middle_plants:.0f} Stück. Hintergrundpflanzen: {background_plants:.0f} Stück."
 
     try:
         tools = [
-            Tool(
-                name="Calculator",
-                func=llm_math_chain_tool.run,
-                description="Ein Taschenrechner, wenn du mathematische Berechnungen durchführen möchtest."
-            ),
+            calculate_plants_amount
         ]
 
         promptTemplate = PromptTemplate.from_template(
@@ -80,15 +112,9 @@ def planning_plants_amount(request: PlanningData):
                 Du bist ein Pflanzen-Planer für Aquarien. Deine Aufgabe ist es die geeignete Menge Pflanzen für ein bestehendes Aquarium zu finden.
                 Angaben zum Aquarium: {request.aquariumInfo}
 
-                1. Berechne die Grundfläche des Aquariums.
-                
-                2. Berechne die Anzahl der Gesamtpflanzen für die Grundfläche des Aquariums.
-                - Eine Pflanze pro 130 cm² Grundfläche.
-                
-                3. Berechne die Anzahl für die Vordergrund-, Mittelgrund- und Hintergrundpflanzen.
-                - Vordergrund: 1/5 der Gesamtpflanzenanzahl
-                - Mittelgrund: 1/5 der Gesamtpflanzenanzahl
-                - Hintergrund: 2/5 der Gesamtpflanzenanzahl
+                1. Berechne die Anzahl der Pflanzen für den Vorder-, Mittel- und Hintergrund des Aquariums aus.
+                Entnehme die Länge und Breite aus den Informationen des gegebenen Aquariums.
+                Für die Prozentsätze der Pflanzen in den verschiedenen Bereichen des Aquariums, gehe davon aus, dass die Vordergrundpflanzen 20% der Fläche, die Mittelgrundpflanzen 40% der Fläche und die Hintergrundpflanzen 40% der Fläche einnehmen.
                 
                 Die Antwort muss so aussehen: 'Vordergrundpflanzen: X Stück. Mittelgrundpflanzen: Y Stück. Hintergrundpflanzen: Z Stück.'
                 """,
@@ -98,13 +124,15 @@ def planning_plants_amount(request: PlanningData):
         react_agent = create_react_agent(llm, tools, react_prompt)
         agent_executor = AgentExecutor(agent=react_agent, tools=tools, handle_parsing_errors=True)
         answer = agent_executor.invoke({"input": promptTemplate})["output"]
+        end_time = time.time()
+        logger.info(f"Planning Plants Amount Calculation finished in {end_time - start_time} seconds")
         return answer
     except Exception as e:
         logger.error(f"Error Plants Amount Calculation: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
-def planning_background_plants(request: PlanningData):
+def planning_plants(request: PlanningData):
     try:
         vectorstore = Pinecone.from_existing_index("aiplannerplants", embedding=OpenAIEmbeddings())
         retriever = vectorstore.as_retriever(search_kwargs={"k": 10})
@@ -138,10 +166,9 @@ def planning_background_plants(request: PlanningData):
             - {'Moospflanzen sollen in die Auswahl einbezogen werden.' if request.useMossPlants else 'Moospflanzen dürfen nicht ausgewählt werden.'}
             - Mindestwachstumsgeschwindigkeit: {request.growthRate}.
 
-            Die Auswahl sollte mindestens eine Pflanze für den Vorder-, Mittel- und Hintergrund umfassen und dabei Wachstumsgeschwindigkeit, Lichtbedarf und CO2-Bedarf jeder Pflanze berücksichtigen.
+            Die Auswahl sollte immer zwei Pflanzen für den Vorder-, Mittel- und Hintergrund umfassen und dabei Wachstumsgeschwindigkeit, Lichtbedarf und CO2-Bedarf jeder Pflanze berücksichtigen.
         """
 
-        # Ausführen des RAG Chains
         result = rag_chain.invoke(prompt)
         return result
     except Exception as e:
