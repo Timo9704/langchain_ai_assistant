@@ -21,8 +21,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('uvicorn.error')
 logger.setLevel(logging.INFO)
 
-
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.7)
+
 
 def tool_retriever_vectorstore_general():
     embedding = OpenAIEmbeddings()
@@ -40,6 +40,7 @@ def tool_retriever_vectorstore_general():
     )
     return retriever_tool
 
+
 def tool_retriever_vectorstore_fishes():
     embedding = OpenAIEmbeddings()
     pinecone_index = Pinecone.from_existing_index("aiplannerfishes", embedding=embedding)
@@ -55,20 +56,6 @@ def tool_retriever_vectorstore_fishes():
     )
     return retriever_tool
 
-def tool_retriever_vectorstore_plants():
-    embedding = OpenAIEmbeddings()
-    pinecone_index = Pinecone.from_existing_index("aiplannerplants", embedding=embedding)
-
-    def retrieve_knowledge(query: str):
-        results = pinecone_index.similarity_search(query, k=8)
-        return results
-
-    retriever_tool = Tool(
-        name="Wissensdatenbank für Pflanzen",
-        func=retrieve_knowledge,
-        description="Eine Wissensdatenbank, die Informationen zu einer spezifischen Pflanze, wie Namen, Lichtbedarf oder CO2-Bedarf liefert."
-    )
-    return retriever_tool
 
 def tool_math_calculator():
     llm_math_chain_tool = LLMMathChain.from_llm(llm)
@@ -79,17 +66,6 @@ def tool_math_calculator():
         description="Ein Taschenrechner, wenn du mathematische Berechnungen durchführen möchtest."
     )
     return calculator_tool
-
-
-def tool_google_search_aquarium():
-    search = GoogleSearchAPIWrapper(google_cse_id=os.environ.get("GOOGLE_CSE_ID_ALL"))
-
-    google_search_tool = Tool(
-        name="Eine Google Websuche, falls du sehr spezifische Fragen hast und keine gute Antwort aus anderen Tools bekommen hast.",
-        description="Eine Websuche.",
-        func=search.run
-    )
-    return google_search_tool
 
 
 def optimize_fish(request: RequestBody):
@@ -105,21 +81,22 @@ def optimize_fish(request: RequestBody):
             Du bist ein Aquarium-Experte und analysierst für Aquarianer deren Aquarien, um ihnen zu helfen, optimale Bedingungen zu schaffen. 
             Gehe Schritt für Schritt vor und nutze alle verfügbaren Informationen, um eine umfassende Beratung zu bieten.
 
-            Aquarium-Details: {request.aquariumInfo} {request.latest10Measurements}
+            Aquarium-Details: {request.aquariumInfo} {request.latest3Measurements}
             Problembeschreibung des Aquarianers: 
             {request.fishProblemDescription}
-            {'Die Fische scheinen gesund zu sein.' if request.fishHealthProblem else 'Die Fische scheinen einen Krankheit zu haben.'}
+            {'Die Fische scheinen einen Krankheit zu haben.' if request.fishHealthProblem else 'Die Fische scheinen gesund zu sein.'}
             {'Es werden verschiedene Futtersorten eingesetzt.' if request.fishDiverseFeed else 'Es wird nur eine Futtersorte eingesetzt.'}
             
             
-            1. Ermittle Probleme:
-            - Erkenne zuerst die Probleme aus der Beschreibung des Aquarianers.
+            1. Ermittle Probleme in Bezug auf die Fische:
             - Wird zu einseitig gefüttert?
+            - Welche Wasserwerte sind auffällig für Fische?
+            - Wenn Fische angegeben sind, passen sie zu den Wasserwerten?
             Beachte, dass nicht alle Informationen relevant sein müssen.
             
             2. Erarbeite Lösungsvorschläge für jedes erkannte Problem.
 
-            - Falls kein Problem vorliegt, sollte klar "Keine Probleme gefunden!" stehen.
+            Falls kein Problem vorliegt, sollte klar "Keine Probleme gefunden!" stehen.
             """,
         )
 

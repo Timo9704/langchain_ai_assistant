@@ -36,12 +36,13 @@ def tool_retriever_vectorstore_general():
         return results
 
     retriever_tool = Tool(
-        name="Wissensdatenbank für Aquaristik und Aquascaping",
+        name="Wissensdatenbank für allgemeine Themen der Aquaristik und des Aquascaping",
         func=retrieve_knowledge,
         description="Eine Wissensdatenbank, die Informationen zu Aquarien, Technik, Fischen und Pflanzen liefert. "
                     "Dort gibt es auch Tipps und Tricks bei Problemen oder Fragen. Es darf jedoch nicht zu allgemein sein, sondern muss ein spezifisches Thema behandeln."
     )
     return retriever_tool
+
 
 def tool_retriever_vectorstore_fishes():
     embedding = OpenAIEmbeddings()
@@ -58,6 +59,7 @@ def tool_retriever_vectorstore_fishes():
     )
     return retriever_tool
 
+
 def tool_retriever_vectorstore_plants():
     embedding = OpenAIEmbeddings()
     pinecone_index = Pinecone.from_existing_index("aiplannerplants", embedding=embedding)
@@ -72,6 +74,7 @@ def tool_retriever_vectorstore_plants():
         description="Eine Wissensdatenbank, die Informationen zu einer spezifischen Pflanze, wie Namen, Lichtbedarf oder CO2-Bedarf liefert."
     )
     return retriever_tool
+
 
 def tool_math_calculator():
     llm_math_chain_tool = LLMMathChain.from_llm(llm)
@@ -115,14 +118,14 @@ def optimize_aquarium(request: RequestBody):
             {'Das Wasser hat keine Trübung oder Verfärbung.' if request.waterClear else 'Das Wasser ist' + request.waterTurbidity}
             
             1. Ermittle Probleme:
-            - Erkenne zuerst die Probleme aus der Beschreibung des Aquarianers.
+            - Erkenne zuerst die Probleme aus der Beschreibung des Aquarianers bezogen auf das Aquarium oder die Technik.
             - Hat der Filter ausreichend Durchfluss?
             - Ist der Heizer für die Beckengröße geeignet?
             Beachte, dass nicht alle Informationen relevant sein müssen.
             
             2. Erarbeite Lösungsvorschläge für jedes erkannte Problem.
 
-            - Falls kein Problem vorliegt, sollte klar "Keine Probleme gefunden!" stehen.
+            Falls kein Problem vorliegt, sollte klar "Keine Probleme gefunden!" stehen.
             """,
         )
 
