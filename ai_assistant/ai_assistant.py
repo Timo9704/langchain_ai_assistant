@@ -26,17 +26,18 @@ app = FastAPI()
 
 # LangChain config
 llm = ChatOpenAI(model="gpt-4o-mini")
+
+# Vectorstore config
 vectorstore = Pinecone.from_existing_index("aquabot", embedding=OpenAIEmbeddings())
 retriever = vectorstore.as_retriever(search_kwargs={"k": 10})
-
-store = {}
+session_store = {}
 
 
 # Helper functions
 def get_session_history(session_id: str) -> BaseChatMessageHistory:
-    if session_id not in store:
-        store[session_id] = ChatMessageHistory()
-    return store[session_id]
+    if session_id not in session_store:
+        session_store[session_id] = ChatMessageHistory()
+    return session_store[session_id]
 
 
 def format_docs(docs):
@@ -50,7 +51,8 @@ async def chat(request: RequestBody):
         system_prompt = (
             "Du bist ein Aquaristik-Experte für Fragen und Antworten."
             "Nutze für deine Antworten die folgenden Informationen aus deinem Fachgebiet."
-            "Wenn du keine Antwort weißt, schreibe einfach 'weiß nicht'."
+            "Wenn du keine Antwort weißt, schreibe einfach 'Entschuldigung, das weiß ich nicht'."
+            "Wenn du beleidigt wirst, antworte einfach 'Es tut mir leid, dass ich dir nicht helfen konnte'."
             f"Beachte, dass der Fragesteller sich auf dem Niveau {request.preferences.experience_level} befindet."
             f"Bitte antworte von der Länge und detailtiefe {request.preferences.detail_level}."
             "Weiterhin bekommst du die folgende Informationen über das Aquarium, falls du Fragen zu bestimmten "
@@ -61,23 +63,23 @@ async def chat(request: RequestBody):
             "{context}"
         )
 
-        contextualize_q_system_prompt = (
-            "Gegeben sei ein Chatverlauf und die neueste Benutzerfrage, "
-            "die sich möglicherweise auf den Kontext im Chatverlauf bezieht. "
+        system_prompt_history = (
+            "Gegeben ist ein Chatverlauf und die aktuellste Benutzerfrage, "
+            "die sich möglicherweise auf den Kontext des Chatverlaufs bezieht. "
             "Formuliere eine eigenständige Frage, die ohne den Chatverlauf verstanden werden kann. "
             "Beantworte die Frage NICHT, sondern formuliere sie bei Bedarf um oder gebe sie unverändert zurück."
         )
 
-        contextualize_q_prompt = ChatPromptTemplate.from_messages(
+        prompt_with_history = ChatPromptTemplate.from_messages(
             [
-                ("system", contextualize_q_system_prompt),
+                ("system", system_prompt_history),
                 MessagesPlaceholder("chat_history"),
                 ("human", "{input}"),
             ]
         )
 
         history_aware_retriever = create_history_aware_retriever(
-            llm, retriever, contextualize_q_prompt
+            llm, retriever, prompt_with_history
         )
 
         qa_prompt = ChatPromptTemplate.from_messages(
@@ -107,16 +109,6 @@ async def chat(request: RequestBody):
             },
         )["answer"]
         return {"answer": answer, "session_id": request.ai_input.session_id}
-    except Exception as e:
-        logger.error(f"Error: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.delete("/assistant/{session_id}")
-def chat(session_id: str):
-    try:
-        store[session_id].clear()
-        return HTTPException(status_code=200, detail="Session cleared")
     except Exception as e:
         logger.error(f"Error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
