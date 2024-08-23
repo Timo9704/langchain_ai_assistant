@@ -1,7 +1,5 @@
 import logging
-
 from fastapi import FastAPI, HTTPException
-
 from ai_planner_links import search_links_controller
 from ai_planner_aquarium import planning_aquarium_controller
 from ai_planner_animals import planning_animals_controller

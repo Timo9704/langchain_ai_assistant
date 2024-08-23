@@ -32,6 +32,8 @@ vectorstore = Pinecone.from_existing_index("aquabot", embedding=OpenAIEmbeddings
 retriever = vectorstore.as_retriever(search_kwargs={"k": 10})
 session_store = {}
 
+#This functions are based on the tutorial from the LangChain documentation.
+#https://python.langchain.com/v0.2/docs/tutorials/chatbot/
 
 # Helper functions
 def get_session_history(session_id: str) -> BaseChatMessageHistory:
