@@ -1,4 +1,6 @@
 import logging
+
+import requests
 from fastapi import FastAPI, HTTPException
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains.history_aware_retriever import create_history_aware_retriever
@@ -13,6 +15,7 @@ from langchain_community.vectorstores import Pinecone
 from langchain_community.chat_message_histories import ChatMessageHistory
 
 from model.input_model import RequestBody
+from datetime import datetime
 
 load_dotenv()
 
@@ -32,8 +35,10 @@ vectorstore = Pinecone.from_existing_index("aquabot", embedding=OpenAIEmbeddings
 retriever = vectorstore.as_retriever(search_kwargs={"k": 10})
 session_store = {}
 
-#This functions are based on the tutorial from the LangChain documentation.
-#https://python.langchain.com/v0.2/docs/tutorials/chatbot/
+LOG_FILE = "/app/logs/user_requests.log"
+
+# This functions are based on the tutorial from the LangChain documentation.
+# https://python.langchain.com/v0.2/docs/tutorials/chatbot/
 
 # Helper functions
 def get_session_history(session_id: str) -> BaseChatMessageHistory:
@@ -46,10 +51,48 @@ def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 
 
+def log_user_request(user_id: str):
+    """
+    Loggt den API-Aufruf eines Nutzers mit Datum und Uhrzeit.
+    """
+    log_entry = f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - {user_id}\n"
+
+    # Sicherstellen, dass die Datei existiert
+    with open(LOG_FILE, "a") as log_file:
+        log_file.write(log_entry)
+
+
+def check_user_entitlement(user_id: str) -> bool:
+    """
+    Fragt die RevenueCat-API an, ob der Nutzer über eine aktive Berechtigung verfügt,
+    und loggt den API-Aufruf.
+    """
+    revenue_cat_url = f"https://api.revenuecat.com/v2/projects/3b722875/customers/{user_id}"
+    headers = {
+        "Authorization": "Bearer sk_gfprlGNHwbyFwrkOCnZYPkyBMhHYW",
+        "Accept": "application/json"
+    }
+
+    response = requests.get(revenue_cat_url, headers=headers)
+    log_user_request(user_id)  # API-Aufruf loggen
+
+    if response.status_code != 200:
+        logger.error(f"Fehler bei der Anfrage an RevenueCat für User {user_id}: {response.status_code}")
+        return False
+
+    return bool(response.json().get("active_entitlements", {}).get("items", []))
+
+
 @app.post("/assistant/")
 async def chat(request: RequestBody):
-    try:
+    if request.ai_input.session_id not in session_store:
+        has_entitlements = check_user_entitlement(request.user_id)
+        logger.info(f"Looking up user {request.user_id} in RevenueCat. Has entitlements: {has_entitlements}")
 
+        if not has_entitlements:
+            return {"answer": "Nicht autorisiert!", "session_id": ""}
+
+    try:
         system_prompt = (
             "Du bist ein Aquaristik-Experte für Fragen und Antworten."
             "Nutze für deine Antworten die folgenden Informationen aus deinem Fachgebiet."

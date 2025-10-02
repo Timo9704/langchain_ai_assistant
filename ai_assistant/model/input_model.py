@@ -33,6 +33,7 @@ class AIInput(BaseModel):
 
 
 class RequestBody(BaseModel):
+    user_id: str
     preferences: Preferences
     aquarium_data: AquariumData
     ai_input: AIInput
